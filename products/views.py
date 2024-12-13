@@ -8,7 +8,7 @@ from products.models import Product
 from products.serializers import ProductSerializer
 
 
-class ProudctView(View):
+class ProductView(View):
     # CRUD operation for PRODUCTS only
     def post(self, request):
         pass
@@ -17,8 +17,10 @@ class ProudctView(View):
         # If request is GET automatically comes here.
         # configure this method to check if request has an id passed to it. if yes, then give the details of one product
         products = Product.objects.all()
-        serializer= ProductSerializer(products,many=True)
-        return JsonResponse(serializer.data)
+        print("hello world")
+
+        serializer = ProductSerializer(products, many=True)
+        return JsonResponse(serializer.data,safe=False)
 
     def put(self, request):
         pass

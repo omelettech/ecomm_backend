@@ -47,4 +47,3 @@ class ProductSkus(models.Model):
     # Add attributes here
     color_attribute = models.ForeignKey(ColorAttribute,on_delete=models.SET_NULL,null=True)
     size_attribute= models.ForeignKey(SizeAttribute,on_delete=models.SET_NULL,null=True)
-# Create your models here.
