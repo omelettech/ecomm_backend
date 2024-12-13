@@ -39,10 +39,12 @@ class ColorAttribute(ProductAttribute):
 class ProductSkus(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     sku = models.CharField(max_length=55, blank=False, null=False)
-    price = models.FloatField(default=0, blank=False)
+    price = models.FloatField(default=0, blank=False,null=False)
     quantity = models.IntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
-
+    # Add attributes here
+    color_attribute = models.ForeignKey(ColorAttribute,on_delete=models.SET_NULL,null=True)
+    size_attribute= models.ForeignKey(SizeAttribute,on_delete=models.SET_NULL,null=True)
 # Create your models here.
