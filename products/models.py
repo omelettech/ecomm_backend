@@ -10,7 +10,7 @@ class Product(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
-    deleted_at = models.DateTimeField(blank=True, null=True)
+    deleted_at = models.DateTimeField(blank=True, null=True,default=None)
 
 
 # Different attributes
