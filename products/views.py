@@ -1,26 +1,52 @@
+from json import JSONDecodeError
+
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.views import View
+from rest_framework.utils import json
+from rest_framework.views import APIView
 
 from products.models import Product
 from products.serializers import ProductSerializer
 
 
-class ProductView(View):
+# products/v1/{id}
+# TODO: Remove in production
+@method_decorator(csrf_exempt, name='dispatch')
+class ProductView(APIView):
     # CRUD operation for PRODUCTS only
+    @csrf_exempt
     def post(self, request):
-        pass
+        # TODO: Handle id passed with requestBody
+        try:
+            data = json.loads(request.body)
+            serializer = ProductSerializer(data=data, many=False)
+
+            print(data, type(data))
+
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data, safe=False, status=201)
+
+            else:
+                JsonResponse({f'{serializer.errors}': 'Failed creating product, invalid serializer'}, status=400)
+
+
+        except JSONDecodeError:
+            return JsonResponse({f'{JSONDecodeError}': 'Failed creating product, invalid json'}, status=400)
 
     def get(self, request):
         # If request is GET automatically comes here.
         # configure this method to check if request has an id passed to it. if yes, then give the details of one product
         products = Product.objects.all()
-        print("hello world")
 
         serializer = ProductSerializer(products, many=True)
-        return JsonResponse(serializer.data,safe=False)
+        print(JsonResponse(serializer.data, safe=False).getvalue())
+
+        return JsonResponse(serializer.data, safe=False)
 
     def put(self, request):
         pass
