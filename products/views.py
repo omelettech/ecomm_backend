@@ -53,15 +53,24 @@ class ProductView(APIView):
         try:
             product_to_update = Product.objects.get(pk=product_id)
             serializer = ProductSerializer(instance=product_to_update, data=json.loads(request.body))
+
             if serializer.is_valid():
                 serializer.save()
-                return JsonResponse(serializer.data,status=200,safe=False)
+                return JsonResponse(serializer.data, status=200, safe=False)
+
             return JsonResponse({"Error": "Serializer not valid"}, status=404)
         except Product.DoesNotExist:
-            return JsonResponse({"Error":"Product does not exist"},status=404)
+            return JsonResponse({"Error": "Product does not exist"}, status=404)
 
-    def delete(self, request):
-        pass
+
+    def delete(self, request, product_id):
+        try:
+            product_to_delete = Product.objects.get(pk=product_id)
+            product_to_delete.delete()
+            return JsonResponse({"Success": "Product deleted"}, status=200)
+
+        except Product.DoesNotExist:
+            return JsonResponse({"Error": "Product does not exist"}, status=404)
 
 
 class ProductSkuView(View):
