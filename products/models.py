@@ -38,7 +38,7 @@ class ColorAttribute(ProductAttribute):
 # for every new attribute table add an attr id to ProductSkus table
 class ProductSkus(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    sku = models.CharField(max_length=55, blank=False, null=False)
+    sku = models.CharField(max_length=55, blank=False, null=False,unique=True)
     price = models.FloatField(default=0, blank=False,null=False)
     quantity = models.IntegerField(default=0)
 
