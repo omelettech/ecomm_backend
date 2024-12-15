@@ -9,8 +9,9 @@ from django.views import View
 from rest_framework.utils import json
 from rest_framework.views import APIView
 
-from products.models import Product
-from products.serializers import ProductSerializer
+from products.models import Product, ProductSkus
+from products.serializers import ProductSerializer, ProductSkuSerializer
+from rest_framework import generics
 
 
 # products/v1/{id}
@@ -72,19 +73,19 @@ class ProductView(APIView):
         except Product.DoesNotExist:
             return JsonResponse({"Error": "Product does not exist"}, status=404)
 
+'''
+CRUD+ operations for ProductSku model 
+'''
+class ProductSkuListCreateAPIView(generics.ListCreateAPIView):
+    queryset = ProductSkus.objects.all()
+    serializer_class = ProductSkuSerializer
+    '''Basic Create for POST method with proper json data
+    Basic List for GET method
+    '''
 
-class ProductSkuView(View):
+class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView): #/<int:product_id>
+    queryset = ProductSkus.objects.all()
+    serializer_class = ProductSkuSerializer
+    lookup_url_kwarg = 'id'
+    lookup_field = 'id'
 
-    def post(self, request):
-        pass
-
-    def get(self, request):
-        pass
-
-    def put(self, request):
-        pass
-
-    def delete(self, request):
-        pass
-
-# Create your views here.
