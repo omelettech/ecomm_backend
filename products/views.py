@@ -48,8 +48,17 @@ class ProductView(APIView):
 
         return JsonResponse(serializer.data, safe=False)
 
-    def put(self, request):
-        pass
+    @csrf_exempt
+    def put(self, request, product_id):
+        try:
+            product_to_update = Product.objects.get(pk=product_id)
+            serializer = ProductSerializer(instance=product_to_update, data=json.loads(request.body))
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data,status=200,safe=False)
+            return JsonResponse({"Error": "Serializer not valid"}, status=404)
+        except Product.DoesNotExist:
+            return JsonResponse({"Error":"Product does not exist"},status=404)
 
     def delete(self, request):
         pass
