@@ -119,17 +119,32 @@ class ProductAttributeListCreateAPIView(APIView):
 
     def get(self, request, attribute_name):
         serializer_class = getSerializer(attribute_name)
-        model_name = f"{attribute_name.capitalize()}Attribute"
+        model_class = apps.get_model('products', f"{attribute_name.capitalize()}Attribute")
         if serializer_class:
             try:
-                model_class = apps.get_model('products', model_name)
                 attribute = model_class.objects.all()
                 serializer = serializer_class(attribute, many=True)
-                return JsonResponse(serializer.data,safe=False)
+                if serializer:
+                    return JsonResponse(serializer.data, safe=False)
             except LookupError:
                 return JsonResponse({f'Error': 'Model class or attributes not found, check model name'}, status=400)
 
         return JsonResponse({f'Error': 'No serializer class, add it the dictionary'}, status=400)
 
-    def post(self):
-        pass
+    def post(self, request, attribute_name):
+
+        serializer_class = getSerializer(attribute_name)
+
+        if serializer_class:
+            try:
+                data = json.loads(request.body)
+                serializer = serializer_class(data=data, many=False)
+
+                if serializer.is_valid():
+                    serializer.save()
+                    return JsonResponse(serializer.data, safe=False)
+
+            except LookupError:
+                return JsonResponse({f'Error': 'Mattributes not found, check model name'}, status=400)
+
+        return JsonResponse({f'Error': 'No serializer class, add it the dictionary'}, status=400)
