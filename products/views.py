@@ -8,10 +8,27 @@ from rest_framework.parsers import JSONParser
 from django.views import View
 from rest_framework.utils import json
 from rest_framework.views import APIView
-
+from django.apps import apps
 from products.models import Product, ProductSkus
-from products.serializers import ProductSerializer, ProductSkuSerializer
+from products.serializers import ProductSerializer, ProductSkuSerializer, SizeAttributeSerializer, \
+    ColorAttributeSerializer
 from rest_framework import generics
+
+ATTRIBUTE_SERIALIZERS = {  # Add new attribute tables here
+    'size': SizeAttributeSerializer,
+    "color": ColorAttributeSerializer,
+}
+
+
+def validateAttribute(attr_name: str):
+    return attr_name in ATTRIBUTE_SERIALIZERS.keys()
+
+
+def getSerializer(attr_name: str):
+    if validateAttribute(attr_name):
+        print(ATTRIBUTE_SERIALIZERS[attr_name])
+        return ATTRIBUTE_SERIALIZERS[attr_name]
+    return None
 
 
 # products/v1/{id}
@@ -63,7 +80,6 @@ class ProductView(APIView):
         except Product.DoesNotExist:
             return JsonResponse({"Error": "Product does not exist"}, status=404)
 
-
     def delete(self, request, product_id):
         try:
             product_to_delete = Product.objects.get(pk=product_id)
@@ -73,9 +89,12 @@ class ProductView(APIView):
         except Product.DoesNotExist:
             return JsonResponse({"Error": "Product does not exist"}, status=404)
 
+
 '''
 CRUD+ operations for ProductSku model 
 '''
+
+
 class ProductSkuListCreateAPIView(generics.ListCreateAPIView):
     queryset = ProductSkus.objects.all()
     serializer_class = ProductSkuSerializer
@@ -83,9 +102,34 @@ class ProductSkuListCreateAPIView(generics.ListCreateAPIView):
     Basic List for GET method
     '''
 
-class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView): #/<int:product_id>
+
+class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):  # /<int:product_id>
     queryset = ProductSkus.objects.all()
     serializer_class = ProductSkuSerializer
     lookup_url_kwarg = 'id'
     lookup_field = 'id'
 
+
+'''
+CRUD for Attributes. Handles dynamically
+'''
+
+
+class ProductAttributeListCreateAPIView(APIView):
+
+    def get(self, request, attribute_name):
+        serializer_class = getSerializer(attribute_name)
+        model_name = f"{attribute_name.capitalize()}Attribute"
+        if serializer_class:
+            try:
+                model_class = apps.get_model('products', model_name)
+                attribute = model_class.objects.all()
+                serializer = serializer_class(attribute, many=True)
+                return JsonResponse(serializer.data,safe=False)
+            except LookupError:
+                return JsonResponse({f'Error': 'Model class or attributes not found, check model name'}, status=400)
+
+        return JsonResponse({f'Error': 'No serializer class, add it the dictionary'}, status=400)
+
+    def post(self):
+        pass

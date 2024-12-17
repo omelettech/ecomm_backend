@@ -9,7 +9,7 @@ urlpatterns = [
     path('v1/product_skus/',ProductSkuListCreateAPIView.as_view()),
     path("v1/product_skus/<int:id>",ProductSkuUpdateDestroyAPIView.as_view()),
 
-    path('v1/product_attribute/<str:attribute_name>', ProductSkuListCreateAPIView.as_view()),
+    path('v1/product_attribute/<str:attribute_name>', ProductAttributeListCreateAPIView.as_view()),
     path("v1/product_attribute/<int:id>", ProductSkuUpdateDestroyAPIView.as_view())
 
 ]
