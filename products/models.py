@@ -6,6 +6,7 @@ class Product(models.Model):
     name = models.CharField(max_length=255, null=False, blank=False)  # blank is for forms, null is for database level
     description = models.TextField(blank=True)  # '' blank string for empty form submission
     summary = models.CharField(max_length=255, blank=True)
+    category = models.CharField(max_length=50,blank=False)
     # cover
 
     created_at = models.DateTimeField(auto_now_add=True)
