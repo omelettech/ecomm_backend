@@ -13,7 +13,8 @@ class Product(models.Model):
     edited_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(blank=True, null=True,default=None)
 
-
+    def __str__(self):
+        print(f"name: {self.name}")
 # Different attributes
 
 class ProductAttribute(models.Model):
@@ -37,7 +38,7 @@ class ColorAttribute(ProductAttribute):
 
 
 # for every new attribute table add an attr id to ProductSkus table
-class ProductSkus(models.Model):
+class ProductSku(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     sku = models.CharField(max_length=55, blank=False, null=False,unique=True)
     price = models.FloatField(default=0, blank=False,null=False)
