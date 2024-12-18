@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
-from products.models import Product, ProductSkus, SizeAttribute, ColorAttribute
+from products.models import Product, ProductSku, SizeAttribute, ColorAttribute
 
 
 class ProductSkuSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProductSkus
+        model = ProductSku
         fields = "__all__"
 
 

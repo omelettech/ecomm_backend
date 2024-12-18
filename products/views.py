@@ -9,7 +9,7 @@ from django.views import View
 from rest_framework.utils import json
 from rest_framework.views import APIView
 from django.apps import apps
-from products.models import Product, ProductSkus
+from products.models import Product, ProductSku
 from products.serializers import ProductSerializer, ProductSkuSerializer, SizeAttributeSerializer, \
     ColorAttributeSerializer
 from rest_framework import generics
@@ -96,7 +96,7 @@ CRUD+ operations for ProductSku model
 
 
 class ProductSkuListCreateAPIView(generics.ListCreateAPIView):
-    queryset = ProductSkus.objects.all()
+    queryset = ProductSku.objects.all()
     serializer_class = ProductSkuSerializer
     '''Basic Create for POST method with proper json data
     Basic List for GET method
@@ -104,7 +104,7 @@ class ProductSkuListCreateAPIView(generics.ListCreateAPIView):
 
 
 class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):  # /<int:product_id>
-    queryset = ProductSkus.objects.all()
+    queryset = ProductSku.objects.all()
     serializer_class = ProductSkuSerializer
     lookup_url_kwarg = 'id'
     lookup_field = 'id'
