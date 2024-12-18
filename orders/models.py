@@ -6,9 +6,9 @@ from products.models import ProductSku
 
 class Order(models.Model):
     # id
-    order_number = models.CharField()
+    order_number = models.CharField(max_length=50)
     status = models.BooleanField()
-    user = models.CharField()  # TODO: change this to use actual users
+    user = models.CharField(max_length=50)  # TODO: change this to use actual users
     # shipping=models.ForeignKey(Shipping)
 
 
