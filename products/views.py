@@ -108,6 +108,7 @@ class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):  # 
     serializer_class = ProductSkuSerializer
     lookup_url_kwarg = 'id'
     lookup_field = 'id'
+    # TODO: Add a get method with product_id as param that returns the top sold product_sku variation to display the image and the price
 
 
 '''
