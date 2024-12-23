@@ -4,15 +4,28 @@ from products.models import Product, ProductSku, SizeAttribute, ColorAttribute
 
 
 class ProductSkuSerializer(serializers.ModelSerializer):
+    size_attribute_value = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductSku
-        fields = "__all__"
+        fields = ["product",
+                  "sku",
+                  "price",
+                  "quantity",
+                  "created_at",
+                  "edited_at",
+                  "color_attribute",
+                  "size_attribute_value",
+                  "size_attribute", ]
+    def get_size_attribute_value(self, obj):
+        return obj.size_attribute.value if obj.size_attribute else None
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = "__all__"
+
 
 # noinspection PyPep8
 '''
@@ -24,13 +37,14 @@ class ProductSerializer(serializers.ModelSerializer):
                                                                                                                                                                                                                                                                                                                                                                      
 '''
 
+
 class SizeAttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = SizeAttribute
-        fields= '__all__'
+        fields = '__all__'
 
 
 class ColorAttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ColorAttribute
-        fields= '__all__'
+        fields = '__all__'
