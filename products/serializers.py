@@ -8,7 +8,8 @@ class ProductSkuSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductSku
-        fields = ["product",
+        fields = ["id",
+            "product",
                   "sku",
                   "price",
                   "quantity",
