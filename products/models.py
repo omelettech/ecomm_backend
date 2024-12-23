@@ -51,6 +51,7 @@ class ProductSku(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(blank=True, null=True, default=None)
     # Add attributes here
     color_attribute = models.ForeignKey(ColorAttribute, on_delete=models.SET_NULL, null=True, default=None, blank=True)
     size_attribute = models.ForeignKey(SizeAttribute, on_delete=models.SET_NULL, null=True, default=None, blank=True)
