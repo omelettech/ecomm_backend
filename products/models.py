@@ -52,8 +52,8 @@ class ProductSku(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
     # Add attributes here
-    color_attribute = models.ForeignKey(ColorAttribute, on_delete=models.SET_NULL, null=True, default=None)
-    size_attribute = models.ForeignKey(SizeAttribute, on_delete=models.SET_NULL, null=True, default=None)
+    color_attribute = models.ForeignKey(ColorAttribute, on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    size_attribute = models.ForeignKey(SizeAttribute, on_delete=models.SET_NULL, null=True, default=None, blank=True)
 
     def __str__(self):
         return f"{self.product} | {self.sku}"
