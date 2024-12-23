@@ -1,5 +1,6 @@
 from json import JSONDecodeError
 
+from django.core import serializers
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
@@ -58,9 +59,7 @@ class ProductView(APIView):
 
     def get(self, request):
         # If request is GET automatically comes here.
-        # configure this method to check if request has an id passed to it. if yes, then give the details of one product
         products = Product.objects.all()
-
         serializer = ProductSerializer(products, many=True)
         print(JsonResponse(serializer.data, safe=False).getvalue())
 
@@ -90,6 +89,24 @@ class ProductView(APIView):
             return JsonResponse({"Error": "Product does not exist"}, status=404)
 
 
+def get_products_with_default_variations(request):
+    # If request is GET automatically comes here.
+    products = Product.objects.all()
+    serializer = []
+
+    for product in products:
+        default_sku = ProductSku.objects.filter(product=product).first()
+
+        print("default:", default_sku, type(default_sku))
+
+        serializer_data = ProductSerializer(product, many=False).data
+        serializer_data["default_sku"] = ProductSkuSerializer(default_sku).data if default_sku else None
+
+        serializer.append(serializer_data)
+
+    return JsonResponse(serializer, safe=False)
+
+
 '''
 CRUD+ operations for ProductSku model 
 '''
@@ -109,6 +126,16 @@ class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):  # 
     lookup_url_kwarg = 'id'
     lookup_field = 'id'
     # TODO: Add a get method with product_id as param that returns the top sold product_sku variation to display the image and the price
+
+
+class ProductSkusByProductId(APIView):
+    def get(self, request, product_id):
+        try:
+            product_skus = ProductSku.objects.filter(product_id=product_id)
+            serializer = ProductSkuSerializer(product_skus, many=True)
+            return JsonResponse(serializer.data, status=200, safe=False)
+        except ProductSku.DoesNotExist:
+            return JsonResponse({"error:": "No product_skus exists"}, status=400)
 
 
 '''
