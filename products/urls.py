@@ -4,8 +4,8 @@ from products.views import *
 # HOST:PORT/products/v1/
 urlpatterns = [
     path('v1/products', ProductView.as_view(),name="product_view"),
-    path('v1/products/<int:product_id>', ProductView.as_view()),
-    path('v1/products/with_default',get_products_with_default_variations),
+    path('v1/products/<int:product_id>', ProductView.as_view(),name="product_view"),
+    path('v1/products/with_default',get_products_with_default_variations,name="product_default_function"),
 
     path('v1/product_skus/',ProductSkuListCreateAPIView.as_view()),
     path("v1/product_skus/<int:id>",ProductSkuUpdateDestroyAPIView.as_view()),
