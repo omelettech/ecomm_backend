@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,13 +31,11 @@ ALLOWED_HOSTS = [
 
 # Application definition
 AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
-
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
-    ...
 ]
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -46,18 +44,31 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "corsheaders",
-    # my added apps
     'rest_framework',
+    'rest_framework.authtoken',
+    # my added apps
     "products",
     "orders",
     'payments',
+    'users',
     # allauth
+    'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-
+    # rest-auth
+    'dj_rest_auth',
+    'rest_framework_simplejwt.token_blacklist',
+    'rest_framework_simplejwt',
 ]
+
+# allauth settings
+SITE_ID = 1
+ACCOUNT_EMAIL_VERIFICATION = "none"  # new
+# LOGIN_REDIRECT_URL = "http://localhost:3000/"  # Front end home page
+# LOGOUT_REDIRECT_URL = "http://localhost:3000/"  # Front end home page
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -68,8 +79,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware",
-
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'ecomm_backend.urls'
@@ -161,3 +172,27 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Your React app's origin
     'http://127.0.0.1:8000',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+
+    ]
+}
+# djangorestframework-simplejwt
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+# dj-rest-auth
+REST_AUTH = {
+    "USE_JWT": True,
+    # "JWT_AUTH_COOKIE": "_auth",  # Name of access token cookie
+    # "JWT_AUTH_REFRESH_COOKIE": "_refresh",  # Name of refresh token cookie
+    # "JWT_AUTH_HTTPONLY": False,  # Makes sure refresh token is sent
+}
