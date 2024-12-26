@@ -35,7 +35,6 @@ AUTHENTICATION_BACKENDS = [
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -57,11 +56,15 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    # 'allauth.socialaccount.providers.facebook',
+    # 'allauth.socialaccount.providers.twitter',
+
     # rest-auth
     'dj_rest_auth',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_simplejwt',
 ]
+
 
 # allauth settings
 SITE_ID = 1

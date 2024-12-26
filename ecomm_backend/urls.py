@@ -26,9 +26,8 @@ urlpatterns = [
     path('products/',include('products.urls')),
     path('orders/',include('orders.urls')),
     path('payments/',include('payments.urls')),
-
-    path("api/v1/auth/", include("dj_rest_auth.urls")),
-    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls'))
+    path('users/',include('users.urls')),
+    # allauth
 
 ]
 
