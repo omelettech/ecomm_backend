@@ -181,21 +181,23 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
 
     ]
 }
 # djangorestframework-simplejwt
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Adjust as needed
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),    # Adjust as needed
+    'ROTATE_REFRESH_TOKENS': True,                 # Automatically issue new refresh tokens
+    'BLACKLIST_AFTER_ROTATION': True,              # Blacklist old refresh tokens
 }
 
 # dj-rest-auth
 REST_AUTH = {
     "USE_JWT": True,
-    # "JWT_AUTH_COOKIE": "_auth",  # Name of access token cookie
-    # "JWT_AUTH_REFRESH_COOKIE": "_refresh",  # Name of refresh token cookie
+    "JWT_AUTH_COOKIE": "_auth",  # Name of access token cookie
+    "JWT_AUTH_REFRESH_COOKIE": "_refresh",  # Name of refresh token cookie
     # "JWT_AUTH_HTTPONLY": False,  # Makes sure refresh token is sent
 }
