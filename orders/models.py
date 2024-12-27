@@ -6,13 +6,30 @@ from users.models import Customer
 
 
 class ShippingAddress(models.Model):
-    pass
+    # id
+    address = models.CharField(max_length=200)
+    city = models.CharField(max_length=200)
+    postal_code = models.CharField(max_length=10)
+    country = models.CharField(max_length=50)
+    added_by = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now=True)
+
 
 class Shipping(models.Model):
-    #id
-    shipping_address = models.ForeignKey(ShippingAddress,on_delete=models.CASCADE)
-
-
+    SHIPPING_STATUS = [
+        ("Pending", "Pending"),
+        ("Complete", "Complete"),
+        ("Failed", "Failed"),
+        ("Cancelled", "Cancelled"),
+    ]
+    # id
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True, blank=True)
+    shipping_method = models.CharField(max_length=50),
+    shipping_cost = models.IntegerField(validators=[MinValueValidator(0)]),
+    shipping_date = models.DateTimeField()
+    status = models.CharField(max_length=50, choices=SHIPPING_STATUS,default="Pending")
 
 
 class Order(models.Model):
@@ -25,15 +42,13 @@ class Order(models.Model):
         ("Complete", "Complete"),
     ]
     # id
-    order_number = models.CharField(max_length=50,unique=True)
-    status = models.CharField(max_length=50, choices=ORDER_STATUS)
+    order_number = models.CharField(max_length=50, unique=True)
+    status = models.CharField(max_length=50, choices=ORDER_STATUS,default="Placed")
     user = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    shipping=models.ForeignKey(Shipping,on_delete=models.CASCADE)
-
+    shipping = models.ForeignKey(Shipping, on_delete=models.SET_NULL)
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
-
 
 
 class OrderItem(models.Model):
