@@ -1,24 +1,59 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-from orders.models import ShippingAddress
-
-class PaymentMethod(models.Model):
-    pass
+from django.utils import timezone
 
 
-class Customer(models.Model):
+class CustomDeleteManager(models.Model):
+    deleted_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        abstract= True
+
+    def soft_delete(self):
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def restore(self):
+        self.deleted_at = None
+        self.save()
+
+    def hard_delete(self):
+        self.delete()
+
+    def is_deleted(self):
+        """Check if the item is soft-deleted."""
+        return self.deleted_at is not None
+
+
+class Customer(CustomDeleteManager):
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=200, null=True)
     # email = models.CharField(max_length=200)
     preferred_currency = models.CharField(max_length=3, null=True)
-    preferred_payment_method = models.ForeignKey(PaymentMethod, on_delete=models.SET_NULL, null=True)
-    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True)
+    shipping_address = models.ForeignKey("orders.ShippingAddress", on_delete=models.SET_NULL, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
+class Wishlist(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+class WishlistItem(CustomDeleteManager):
+    #id
+    wishlist = models.ForeignKey("Wishlist", on_delete=models.CASCADE)
+    product_sku = models.ForeignKey("products.ProductSku", on_delete=models.CASCADE)
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    deleted_at = models.DateTimeField(blank=True, null=True, default=None)
+
+
+
+    def __str__(self):
+        return f'{self.wishlist.customer.name} | {self.product_sku.product.name}'
+
 
 # Create your models here.
