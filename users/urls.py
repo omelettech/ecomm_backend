@@ -1,9 +1,9 @@
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
 # https://dj-rest-auth.readthedocs.io/en/latest/api_endpoints.html
-from users.views import GoogleLogin, CustomerView, WishlistListCreateView, WishlistRUDView
+from users.views import GoogleLogin, CustomerView, WishlistView, WishlistItemView
 
 urlpatterns = [
     path("v1/dj-rest-auth/", include("dj_rest_auth.urls")),
@@ -11,7 +11,9 @@ urlpatterns = [
     path('v1/dj-rest-auth/google/', GoogleLogin.as_view(), name='google_login'),
 
     path('v1/customer/', CustomerView.as_view(), name='customer'),
-    path('v1/wishlist/', WishlistListCreateView.as_view(), name='wishlist'),
-    path('v1/wishlist/<int:pk>/', WishlistRUDView.as_view(), name='wishlist_rud'),
+
+    path('v1/wishlist/', WishlistView.as_view(), name='wishlist_rud'),
+    path('v1/wishlistitem/', WishlistItemView.as_view(), name='wishlist_item'),
+    path('v1/wishlistitem/<int:pk>/', WishlistItemView.as_view(), name='wishlist_item_rud'),
 
 ]
