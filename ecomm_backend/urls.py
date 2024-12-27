@@ -17,18 +17,35 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
-
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
 
 from ecomm_backend import settings
 
+# Set up the schema view
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Your API",
+        default_version='v1',
+        description="API documentation",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="contact@yourapi.com"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny]
+)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('products/',include('products.urls')),
-    path('orders/',include('orders.urls')),
-    path('payments/',include('payments.urls')),
-    path('users/',include('users.urls')),
-    # allauth
-
+    path('products/', include('products.urls')),
+    path('orders/', include('orders.urls')),
+    path('payments/', include('payments.urls')),
+    path('users/', include('users.urls')),
+    # swagger
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0),
+         name='schema-swagger-ui'),
 ]
 
 if settings.DEBUG:
