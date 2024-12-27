@@ -2,7 +2,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from products.models import ProductSku
-
+from users.models import Customer
 
 
 class ShippingAddress(models.Model):
@@ -17,14 +17,23 @@ class Shipping(models.Model):
 
 class Order(models.Model):
     ORDER_STATUS = [
-        ("Pending", "Pending"),
-        ("Complete", "Complete")
+        ("Placed", "Placed"),
+        ("Failed", "Failed"),
+        ("Processing", "Processing"),
+        ("Cancelled", "Cancelled"),
+        ("Shipping", "Shipping"),
+        ("Complete", "Complete"),
     ]
     # id
-    order_number = models.CharField(max_length=50)
+    order_number = models.CharField(max_length=50,unique=True)
     status = models.CharField(max_length=50, choices=ORDER_STATUS)
-    user = models.CharField(max_length=50)  # TODO: change this to use actual users
-    # shipping=models.ForeignKey(Shipping)
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    shipping=models.ForeignKey(Shipping,on_delete=models.CASCADE)
+
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now=True)
+
 
 
 class OrderItem(models.Model):
