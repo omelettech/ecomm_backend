@@ -14,6 +14,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 
 class WishlistItemSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = WishlistItem
         fields = ['id', 'wishlist', 'product_sku', 'added_at', 'deleted_at']
@@ -21,7 +22,6 @@ class WishlistItemSerializer(serializers.ModelSerializer):
 
 class WishlistSerializer(serializers.ModelSerializer):
     wishlistitem_set = WishlistItemSerializer(many=True)
-    wishlist = serializers.CharField(required=True)  # Ensure this field is required
 
     class Meta:
         model = Wishlist

@@ -29,7 +29,8 @@ class Shipping(models.Model):
     shipping_method = models.CharField(max_length=50),
     shipping_cost = models.IntegerField(validators=[MinValueValidator(0)]),
     shipping_date = models.DateTimeField()
-    status = models.CharField(max_length=50, choices=SHIPPING_STATUS,default="Pending")
+    status = models.CharField(max_length=50, choices=SHIPPING_STATUS, default="Pending")
+    order = models.OneToOneField('Order', on_delete=models.CASCADE)
 
 
 class Order(models.Model):
@@ -42,10 +43,9 @@ class Order(models.Model):
         ("Complete", "Complete"),
     ]
     # id
-    order_number = models.CharField(max_length=50, unique=True)
-    status = models.CharField(max_length=50, choices=ORDER_STATUS,default="Placed")
-    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    shipping = models.ForeignKey(Shipping, on_delete=models.SET_NULL,null=True)
+    order_number = models.CharField(max_length=30, unique=True,editable=False)
+    status = models.CharField(max_length=50, choices=ORDER_STATUS, default="Placed")
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE, editable=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
@@ -60,9 +60,9 @@ class OrderItem(models.Model):
         return f'{self.product_sku.product} | ${self.product_sku.price} | ({self.quantity})'
 
 
-
 class Cart(models.Model):
     customer = models.OneToOneField(Customer, on_delete=models.CASCADE)
+
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
