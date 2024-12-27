@@ -42,6 +42,9 @@ class Customer(CustomDeleteManager):
 class Wishlist(models.Model):
     customer = models.OneToOneField(Customer, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.customer.user.username
+
 class WishlistItem(CustomDeleteManager):
     #id
     wishlist = models.ForeignKey("Wishlist", on_delete=models.CASCADE)
@@ -53,7 +56,7 @@ class WishlistItem(CustomDeleteManager):
 
 
     def __str__(self):
-        return f'{self.wishlist.customer.name} | {self.product_sku.product.name}'
+        return f'{self.wishlist.__str__()} | {self.product_sku.product.name}'
 
 
 # Create your models here.
