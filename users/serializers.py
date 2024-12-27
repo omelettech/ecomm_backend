@@ -5,18 +5,18 @@ from users.models import Customer, Wishlist, WishlistItem
 
 
 class CustomerSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(source='user.username')
-    email = serializers.CharField(source='user.email')
+    username = serializers.CharField(source='user.username',read_only=True)
+    email = serializers.CharField(source='user.email',read_only=True)
 
     class Meta:
         model = Customer
-        fields = ['user', 'username', 'name', 'email', 'preferred_currency', 'shipping_address', 'created_at']
+        fields = ['id', 'user', 'username', 'email', 'name', 'preferred_currency', 'shipping_address', 'created_at']
 
 
 class WishlistItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = WishlistItem
-        fields = ['wishlist', 'product_sku', 'added_at', 'deleted_at']
+        fields = ['id', 'wishlist', 'product_sku', 'added_at', 'deleted_at']
 
 
 class WishlistSerializer(serializers.ModelSerializer):
@@ -24,4 +24,4 @@ class WishlistSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Wishlist
-        fields = ['customer', 'wishlistitem_set']
+        fields = ['id', 'customer', 'wishlistitem_set']

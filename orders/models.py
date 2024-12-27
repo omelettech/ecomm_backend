@@ -45,7 +45,7 @@ class Order(models.Model):
     order_number = models.CharField(max_length=50, unique=True)
     status = models.CharField(max_length=50, choices=ORDER_STATUS,default="Placed")
     user = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    shipping = models.ForeignKey(Shipping, on_delete=models.SET_NULL)
+    shipping = models.ForeignKey(Shipping, on_delete=models.SET_NULL,null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
@@ -59,4 +59,16 @@ class OrderItem(models.Model):
     def __str__(self):
         return f'{self.product_sku.product} | ${self.product_sku.price} | ({self.quantity})'
 
+
+
+class Cart(models.Model):
+    customer = models.OneToOneField(Customer, on_delete=models.CASCADE)
+
+class CartItem(models.Model):
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+    product_sku = models.ForeignKey(ProductSku, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+
+    def __str__(self):
+        return f'{self.product_sku.product} | ${self.product_sku.price} | ({self.quantity})'
 # Create your models here.

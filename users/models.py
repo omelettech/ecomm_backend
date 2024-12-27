@@ -31,16 +31,16 @@ class Customer(CustomDeleteManager):
     name = models.CharField(max_length=200, null=True)
     # email = models.CharField(max_length=200)
     preferred_currency = models.CharField(max_length=3, null=True)
-    shipping_address = models.ForeignKey("orders.ShippingAddress", on_delete=models.SET_NULL, null=True)
+    shipping_address = models.ForeignKey("orders.ShippingAddress", on_delete=models.SET_NULL, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+        return self.user.__str__()
 
 class Wishlist(models.Model):
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.OneToOneField(Customer, on_delete=models.CASCADE)
 
 class WishlistItem(CustomDeleteManager):
     #id
