@@ -1,4 +1,7 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
+from users.models import Customer
 
 
 class Product(models.Model):
@@ -7,6 +10,7 @@ class Product(models.Model):
     description = models.TextField(blank=True)  # '' blank string for empty form submission
     summary = models.CharField(max_length=255, blank=True)
     category = models.CharField(max_length=50, blank=False, default="none")
+
     # cover
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -58,3 +62,19 @@ class ProductSku(models.Model):
 
     def __str__(self):
         return f"{self.product} | {self.sku}"
+
+
+
+class Review(models.Model):
+    # id
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    review = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    edited_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(blank=True, null=True, default=None)
+
+    def __str__(self):
+        return f"{self.customer} | {self.rating}"
+
