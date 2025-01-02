@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from orders.models import Order, OrderItem
 from orders.serializers import OrderSerializer, OrderItemSerializer
 from payments.models import Payment
+from products.models import ProductSku
 
 
 class OrderListCreateApiView(generics.ListCreateAPIView):
@@ -18,17 +19,30 @@ class OrderListCreateApiView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user.customer)
+        return Order.objects.filter(customer=self.request.user.customer)
 
     def perform_create(self, serializer):
-        unique_suffix = ''.join(random.choices(string.digits, k=8))  # Random 8-digit suffix
+        unique_suffix = ''.join(random.choices(string.digits, k=8))
         ordernum = f"ORD#{unique_suffix}"
 
-        order_instance = serializer.save(user=self.request.user.customer, order_number=ordernum)
-        # Create a payment instance
-        payment_instance = Payment.objects.create(order=order_instance,
-                                                  amount=order_instance.total_price)
+        # Create A orderitem instance if doesnt exist
+        order_items_data = self.request.data.get("order_items", [])
+        if order_items_data:
+            order_instance = serializer.save(customer=self.request.user.customer, order_number=ordernum)
+            self._perform_create_order_items(order_instance, order_items_data)
+        else:
+            raise ValueError("Order Items are required")
 
+
+    def _perform_create_order_items(self, order_instance, order_items_data):
+        for order_item in order_items_data:
+            product_sku_instance = ProductSku.objects.get(sku=order_item['product_sku'])  # Assuming 1 is the ID
+            quantity = order_item['quantity']
+            print(product_sku_instance)
+
+            if product_sku_instance is None:
+                raise ValueError("Product SKU not found")
+            OrderItem.objects.create(order=order_instance,product_sku=product_sku_instance, quantity=quantity)
 
 class OrderRetrieveUpdateDeleteApiView(generics.RetrieveUpdateDestroyAPIView):
     # GET PUT DELETE

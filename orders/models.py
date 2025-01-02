@@ -44,9 +44,9 @@ class Order(models.Model):
         ("Complete", "Complete"),
     ]
     # id
-    order_number = models.CharField(max_length=30, unique=True)
+    order_number = models.CharField(max_length=30, unique=True,editable=False)
     status = models.CharField(max_length=50, choices=ORDER_STATUS, default="Placed")
-    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
