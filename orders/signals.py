@@ -27,8 +27,5 @@ def create_shipping(sender, instance, created, **kwargs):
 #         )
 #     instance.save()
 
-@receiver(post_save, sender=OrderItem)
-def update_order_edited_at(sender, instance, created, **kwargs):
-    if created:
-        instance.order.update_edited_time()
+
 

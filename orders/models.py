@@ -66,6 +66,8 @@ class OrderItem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(auto_now=True)
 
+
+
     def __str__(self):
         return f'{self.product_sku.product} | ${self.product_sku.price} | ({self.quantity})'
 

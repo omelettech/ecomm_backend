@@ -64,6 +64,10 @@ INSTALLED_APPS = [
     'dj_rest_auth',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_simplejwt',
+
+    #
+    "django_extensions",
+
 ]
 
 
