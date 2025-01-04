@@ -5,15 +5,25 @@ from dj_rest_auth.registration.views import SocialLoginView
 from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 
+from ecomm_backend import settings
 from users.models import Customer, Wishlist, WishlistItem
 from users.serializers import CustomerSerializer, WishlistSerializer, WishlistItemSerializer
 
 
 class GoogleLogin(SocialLoginView):  # if you want to use Authorization Code Grant, use this
     adapter_class = GoogleOAuth2Adapter
-    # callback_url = CALLBACK_URL_YOU_SET_ON_GOOGLE
+    callback_url = settings.GOOGLE_OAUTH_CALLBACK_URL
     client_class = OAuth2Client
+
+class GoogleLoginCallback(APIView):  # if you want to use Implicit Grant, use this
+    def get(self, request):
+        code=request.GET.get('code')
+
+        if not code or code is None:
+            return JsonResponse(status=400, data={'message': 'Invalid code.'})
+        tokenendpoint = urljoin(settings.GOOGLE_OAUTH_TOKEN_URL, 'token')
 
 class CustomerView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Customer.objects.all()

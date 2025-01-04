@@ -4,7 +4,7 @@ from django.utils import timezone
 
 
 class CustomDeleteManager(models.Model):
-    deleted_at = models.DateTimeField(blank=True, null=True)
+    deleted_at = models.DateTimeField(blank=True, null=True, default=None)
 
     class Meta:
         abstract= True
@@ -51,7 +51,6 @@ class WishlistItem(CustomDeleteManager):
     product_sku = models.ForeignKey("products.ProductSku", on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
 
-    deleted_at = models.DateTimeField(blank=True, null=True, default=None)
 
 
 
