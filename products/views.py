@@ -89,22 +89,34 @@ class ProductView(APIView):
             return JsonResponse({"Error": "Product does not exist"}, status=404)
 
 
+def get_featured_products(request):
+    # If request is GET automatically comes here.
+    if request.method == 'GET':
+        products = Product.objects.filter(featured=True)
+        serializer = ProductSerializer(products, many=True)
+        return JsonResponse(serializer.data, safe=False)
+    else:
+        return JsonResponse({"Error": f"{request.method} not allowed"}, status=405)
+
 def get_products_with_default_variations(request):
     # If request is GET automatically comes here.
-    products = Product.objects.all()
-    serializer = []
+    if request.method == 'GET':
+        products = Product.objects.all()
+        serializer = []
 
-    for product in products:
-        default_sku = ProductSku.objects.filter(product=product).first()
+        for product in products:
+            default_sku = ProductSku.objects.filter(product=product).first()
 
-        print("default:", default_sku, type(default_sku))
+            print("default:", default_sku, type(default_sku))
 
-        serializer_data = ProductSerializer(product, many=False).data
-        serializer_data["default_sku"] = ProductSkuSerializer(default_sku).data if default_sku else None
+            serializer_data = ProductSerializer(product, many=False).data
+            serializer_data["default_sku"] = ProductSkuSerializer(default_sku).data if default_sku else None
 
-        serializer.append(serializer_data)
+            serializer.append(serializer_data)
 
-    return JsonResponse(serializer, safe=False)
+        return JsonResponse(serializer, safe=False)
+    else:
+        return JsonResponse({"Error": f"{request.method} not allowed"}, status=405)
 
 
 '''
@@ -127,8 +139,8 @@ class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):  # 
     lookup_field = 'id'
     # TODO: Add a get method with product_id as param that returns the top sold product_sku variation to display the image and the price
 
-
 class ProductSkusByProductId(APIView):
+    @csrf_exempt
     def get(self, request, product_id):
         try:
             product_skus = ProductSku.objects.filter(product_id=product_id)
