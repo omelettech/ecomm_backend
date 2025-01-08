@@ -93,8 +93,18 @@ def get_featured_products(request):
     # If request is GET automatically comes here.
     if request.method == 'GET':
         products = Product.objects.filter(featured=True)
-        serializer = ProductSerializer(products, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        serializer = []
+
+        for product in products:
+            default_sku= ProductSku.objects.filter(product=product).first() # get the default sku
+
+            serializer_data = ProductSerializer(product, many=False).data # parse the serializer data for the product
+            serializer_data["default_sku"] = ProductSkuSerializer(default_sku).data if default_sku else None
+            # add the default sku to the serializer data
+
+            serializer.append(serializer_data) # append the data to the serializer
+
+        return JsonResponse(serializer, safe=False)
     else:
         return JsonResponse({"Error": f"{request.method} not allowed"}, status=405)
 
