@@ -128,7 +128,7 @@ class CartListCreateApiView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Cart.objects.get(customer=self.request.user.customer)
+        return Cart.objects.filter(customer=self.request.user.customer)
 
     def post(self, request, *args, **kwargs):  # TODO: implement feature to add cart items to cart
 
