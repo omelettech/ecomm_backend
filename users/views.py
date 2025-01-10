@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
