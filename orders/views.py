@@ -4,11 +4,11 @@ import string
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from orders.models import Order, OrderItem
-from orders.serializers import OrderSerializer, OrderItemSerializer
+from orders.models import Order, OrderItem, Cart, CartItem
+from orders.serializers import OrderSerializer, OrderItemSerializer, CartSerializer
 from payments.models import Payment
 from products.models import ProductSku
 
@@ -47,8 +47,6 @@ class OrderListApiView(generics.ListAPIView):
 def generate_order_number():
     unique_suffix = ''.join(random.choices(string.digits, k=8))
     return f"ORD#{unique_suffix}"
-
-
 
 
 class OrderCreateApiView(generics.CreateAPIView):
@@ -122,12 +120,41 @@ class OrderItemRetrieveUpdateDelete(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = OrderItemSerializer
     permission_classes = [IsAdminUser]
 
+
 # Create your views here.
 class CartListCreateApiView(generics.ListCreateAPIView):
     # CREATE AND LIST
-    serializer_class = OrderItemSerializer
+    serializer_class = CartSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.request.user.customer.cart.cartitem_set.all()
+        return Cart.objects.get(customer=self.request.user.customer)
 
+    def post(self, request, *args, **kwargs):  # TODO: implement feature to add cart items to cart
+
+        try:
+            product_sku = ProductSku.objects.get(sku=self.request.data.get('product_sku'))
+            quantity = self.request.data.get("quantity")
+
+            if not quantity:
+                return JsonResponse({"error": f"Quantity not provided"})
+            elif quantity > product_sku.quantity:
+                return JsonResponse({"error": f"Product variation only has {product_sku.quantity} items left"})
+
+        except ProductSku.DoesNotExist:
+            return JsonResponse({"error": "Product Sku does not exist"})
+
+
+        # Check if cart item already exists, if it does update quantity
+        cart_item, created = CartItem.objects.get_or_create(
+            cart=self.get_queryset(),
+            product_sku=product_sku,
+            defaults={'quantity': int(quantity)}  # providing quantity only for creation
+        )
+
+        if not created:
+            cart_item.quantity += int(quantity)
+            cart_item.save()
+
+        serializer = self.serializer_class(Cart.objects.get(customer=self.request.user.customer))
+        return JsonResponse(serializer.data,status=status.HTTP_201_CREATED)
