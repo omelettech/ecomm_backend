@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from django.views import View
+from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.utils import json
 from rest_framework.views import APIView
 from django.apps import apps
@@ -33,11 +34,8 @@ def getSerializer(attr_name: str):
 
 
 # products/v1/{id}
-# TODO: Remove in production
-@method_decorator(csrf_exempt, name='dispatch')
 class ProductView(APIView):
     # CRUD operation for PRODUCTS only
-    @csrf_exempt
     def post(self, request):
         # TODO: Handle id passed with requestBody
         try:
@@ -65,7 +63,6 @@ class ProductView(APIView):
 
         return JsonResponse(serializer.data, safe=False)
 
-    @csrf_exempt
     def put(self, request, product_id):
         try:
             product_to_update = Product.objects.get(pk=product_id)
@@ -137,6 +134,12 @@ CRUD+ operations for ProductSku model
 class ProductSkuListCreateAPIView(generics.ListCreateAPIView):
     queryset = ProductSku.objects.all()
     serializer_class = ProductSkuSerializer
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            # Only allow admins to create
+            return [IsAdminUser()]
+        return [AllowAny()]
     '''Basic Create for POST method with proper json data
     Basic List for GET method
     '''
@@ -147,10 +150,22 @@ class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):  # 
     serializer_class = ProductSkuSerializer
     lookup_url_kwarg = 'id'
     lookup_field = 'id'
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            # Only allow admins to create
+            return [IsAdminUser()]
+        return [AllowAny()]
     # TODO: Add a get method with product_id as param that returns the top sold product_sku variation to display the image and the price
 
 class ProductSkusByProductId(APIView):
-    @csrf_exempt
+
+    def get_permissions(self):
+        if self.request.method != 'GET':
+            # Only allow admins to create
+            return [IsAdminUser()]
+        return [AllowAny()]
+
     def get(self, request, product_id):
         try:
             product_skus = ProductSku.objects.filter(product_id=product_id)
