@@ -181,24 +181,28 @@ class CartListCreateApiView(generics.ListCreateAPIView):
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CartItemRetrieveUpdateDestroyApiView(generics.DestroyAPIView):
+class CartItemRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CartItemSerializer
     permission_classes = [IsAuthenticated]
 
-    def getCart(self):
+    def get_cart(self):
         return Cart.objects.filter(customer=self.request.user.customer)
 
+    def get_object(self):
+        cart = self.get_cart()[0]
+        id = self.kwargs.get('pk')
+        return CartItem.objects.get(cart=cart, id=id,deleted_at__isnull=True)
+
+
+
     def get_queryset(self):
-        return CartItem.objects.filter(cart=self.getCart)
+        return CartItem.objects.filter(cart=self.get_cart)
 
     def perform_destroy(self, instance):
         instance.soft_delete()
 
     def destroy(self, request, *args, **kwargs):
-        cart = Cart.objects.get(customer=self.request.user.customer)
-        id = self.kwargs.get('pk')
-
-        instance = CartItem.objects.get(cart=cart, id=id)
+        instance = self.get_object()
         serializer = self.serializer_class(instance)
         print(instance, serializer)
 
@@ -213,3 +217,20 @@ class CartItemRetrieveUpdateDestroyApiView(generics.DestroyAPIView):
             return JsonResponse({"error": f"Cart item does not exist"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return JsonResponse(serializer.data, status=status.HTTP_204_NO_CONTENT, safe=False)
+
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False) # Becomes true when a PATCH request sent
+
+        cart=self.get_cart()
+        instance = self.get_object()
+        data = request.data
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+
+        self.perform_update(serializer)
+
+        return JsonResponse(serializer.data,status=status.HTTP_202_ACCEPTED)
+
+
+
