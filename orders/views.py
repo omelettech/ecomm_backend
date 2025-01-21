@@ -8,15 +8,16 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from orders.models import Order, OrderItem, Cart, CartItem
-from orders.serializers import OrderSerializer, OrderItemSerializer, CartSerializer
+from orders.serializers import OrderSerializer, OrderItemSerializer, CartSerializer, CartItemSerializer
 from payments.models import Payment
 from products.models import ProductSku
 
 
 def perform_create_order_items(order_instance, cart_items_data):
-    for order_item in cart_items_data:
-        product_sku_instance = ProductSku.objects.get(sku=order_item['product_sku'])
-        quantity = order_item['quantity']
+    for cart_item in cart_items_data:
+        print(cart_item['id'])
+        product_sku_instance = ProductSku.objects.get(sku=cart_item['product_sku'])
+        quantity = cart_item['quantity']
         print(product_sku_instance)
 
         if product_sku_instance is None:
@@ -56,18 +57,38 @@ class OrderCreateApiView(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         cart_items_data = self.request.user.customer.cart.cartitem_set.all()
-        print(cart_items_data)
-        print(cart_items_data)
-        if cart_items_data:
-            return self.create(request, *args, **kwargs)
-        else:
-            raise ValueError("cart Items are required")
+        ordernum = generate_order_number()
 
-    # def perform_create(self, serializer):
+        total_price = 0
+        order_buffer = Order.objects.create(order_number=ordernum, customer=self.request.user.customer)
+        order_item_buffer = []
+
+        for cart_item in cart_items_data:
+            # make a new cart item object
+            product_sku = cart_item.product_sku
+            # TODO: Create functions that checks if product sku exists and if quantity is good,
+            #  use it for both order and cart
+            order_item_buffer.append(
+                OrderItem.objects.create(
+                    order=order_buffer,
+                    product_sku=product_sku,
+                    quantity=cart_item.quantity
+                )
+            )
+
+            total_price += cart_item.product_sku.price * cart_item.quantity
+        print(total_price)
+
+        return JsonResponse({"Order created": f"{order_item_buffer[0].order}"})
+
+    # def generate_ordernum(self, serializer):
     #     ordernum = generate_order_number()
     #
     #     # Create A orderitem instance if doesnt exist
     #     # order_items_data = self.request.data.get("order_items", {})
+    #     cart_items_data = self.request.user.customer.cart.cartitem_set.all()
+    #     print(cart_items_data)
+    #
     #     order_instance = serializer.save(customer=self.request.user.customer, order_number=ordernum)
     #     perform_create_order_items(order_instance, cart_items_data)
 
@@ -130,7 +151,7 @@ class CartListCreateApiView(generics.ListCreateAPIView):
     def get_queryset(self):
         return Cart.objects.filter(customer=self.request.user.customer)
 
-    def post(self, request, *args, **kwargs):  # TODO: implement feature to add cart items to cart
+    def post(self, request, *args, **kwargs):
 
         try:
             product_sku = ProductSku.objects.get(sku=self.request.data.get('product_sku'))
@@ -144,12 +165,12 @@ class CartListCreateApiView(generics.ListCreateAPIView):
         except ProductSku.DoesNotExist:
             return JsonResponse({"error": "Product Sku does not exist"})
 
-
         # Check if cart item already exists, if it does update quantity
         cart_item, created = CartItem.objects.get_or_create(
-            cart=self.get_queryset(),
+            cart=self.get_queryset()[0],
             product_sku=product_sku,
-            defaults={'quantity': int(quantity)}  # providing quantity only for creation
+            defaults={'quantity': int(quantity)},  # providing quantity only for creation
+            deleted_at__isnull=True  # Ensures only non-deleted rows are considered
         )
 
         if not created:
@@ -157,4 +178,38 @@ class CartListCreateApiView(generics.ListCreateAPIView):
             cart_item.save()
 
         serializer = self.serializer_class(Cart.objects.get(customer=self.request.user.customer))
-        return JsonResponse(serializer.data,status=status.HTTP_201_CREATED)
+        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class CartItemRetrieveUpdateDestroyApiView(generics.DestroyAPIView):
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
+
+    def getCart(self):
+        return Cart.objects.filter(customer=self.request.user.customer)
+
+    def get_queryset(self):
+        return CartItem.objects.filter(cart=self.getCart)
+
+    def perform_destroy(self, instance):
+        instance.soft_delete()
+
+    def destroy(self, request, *args, **kwargs):
+        cart = Cart.objects.get(customer=self.request.user.customer)
+        id = self.kwargs.get('pk')
+
+        instance = CartItem.objects.get(cart=cart, id=id)
+        serializer = self.serializer_class(instance)
+        print(instance, serializer)
+
+        if not instance.DoesNotExist:
+            return JsonResponse({"error": f"Cart item does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            self.perform_destroy(instance)
+        except AssertionError:
+            return JsonResponse({"error": f"Cart item does not exist"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except ValueError:
+            return JsonResponse({"error": f"Cart item does not exist"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return JsonResponse(serializer.data, status=status.HTTP_204_NO_CONTENT, safe=False)

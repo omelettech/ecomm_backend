@@ -38,12 +38,24 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
 
 class CartItemSerializer(serializers.ModelSerializer):
+    product_sku_price= serializers.SerializerMethodField(read_only=True)
+
+
     class Meta:
         model = CartItem
         fields= "__all__"
 
+    def get_product_sku_price(self,obj):
+        return obj.product_sku.price
+
+
 class CartSerializer(serializers.ModelSerializer):
-    cartitem_set = CartItemSerializer(many=True, required=False)
+    cartitem_set = serializers.SerializerMethodField()
     class Meta:
         model = Cart
         fields= ["id", "customer", "cartitem_set"]
+
+    def get_cartitem_set(self, obj):
+        # Filter related items where deleted_at is null
+        cart_items = obj.cartitem_set.filter(deleted_at__isnull=True)
+        return CartItemSerializer(cart_items, many=True).data

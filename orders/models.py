@@ -85,9 +85,14 @@ class CartItem(models.Model):
     edited_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(blank=True, null=True, default=None)
 
+
+
     def soft_delete(self):
-        self.deleted_at = timezone.now()
-        self.save()
+        if not self.deleted_at:
+            self.deleted_at = timezone.now()
+            self.save()
+        else:
+            raise AssertionError("Cart item already deleted")
 
     def restore(self):
         self.deleted_at = None
