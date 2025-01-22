@@ -1,6 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from pictures.models import Image
 from users.models import Customer
 
 
@@ -11,6 +12,7 @@ class Product(models.Model):
     summary = models.CharField(max_length=255, blank=True)
     category = models.CharField(max_length=50, blank=False, default="none")
     featured= models.BooleanField(default=False)
+    images = models.ManyToManyField(Image)
 
     # cover
 
@@ -46,6 +48,8 @@ class SizeAttribute(ProductAttribute):
 class ColorAttribute(ProductAttribute):
     value = models.CharField(blank=False, max_length=256)
 
+class PictureAttribute(ProductAttribute):
+    value = models.ForeignKey(Image,on_delete=models.SET_NULL,null=True)
 
 # for every new attribute table add an attr id to ProductSkus table
 class ProductSku(models.Model):
@@ -60,6 +64,7 @@ class ProductSku(models.Model):
     # Add attributes here
     color_attribute = models.ForeignKey(ColorAttribute, on_delete=models.SET_NULL, null=True, default=None, blank=True)
     size_attribute = models.ForeignKey(SizeAttribute, on_delete=models.SET_NULL, null=True, default=None, blank=True)
+    picture_attribute=models.ForeignKey(PictureAttribute,on_delete=models.SET_NULL,null=True,default=None,blank=True)
 
     def __str__(self):
         return f"{self.product} | {self.sku}"
