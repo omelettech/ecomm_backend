@@ -1,11 +1,12 @@
 from rest_framework import serializers
 
+from pictures.models import Image
 from products.models import Product, ProductSku, SizeAttribute, ColorAttribute
 
 
 class ProductSkuSerializer(serializers.ModelSerializer):
     size_attribute_value = serializers.SerializerMethodField()
-    associated_image_path = serializers.SerializerMethodField()
+    associated_image = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductSku
@@ -20,19 +21,32 @@ class ProductSkuSerializer(serializers.ModelSerializer):
                   "size_attribute_value",
                   "size_attribute",
                   "picture_attribute",
-                  "associated_image_path"
+                  "associated_image"
                   ]
 
     def get_size_attribute_value(self, obj):
         return obj.size_attribute.value if obj.size_attribute else None
 
-    def get_associated_image_path(self, obj):
-        return str(obj.picture_attribute.value.image) if obj.picture_attribute else None
+    def get_associated_image(self, obj):
+        if obj.picture_attribute and obj.picture_attribute.value:
+            # Serialize the `picture_attribute.value` using `ProductImageSerializer`
+            return ProductImageSerializer(obj.picture_attribute.value).data
+        return None
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Image
+        fields=['image','alt']
+
 
 class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
     class Meta:
         model = Product
         fields = "__all__"
+
 
 
 # noinspection PyPep8
@@ -42,7 +56,6 @@ class ProductSerializer(serializers.ModelSerializer):
 \ \  _-/\ \  __<\ \ \/\ \ \ \/\ \ \ \_\ \ \ \___\/_/\ \/   \ \  __ \/_/\ \/\/_/\ \/\ \  __<\ \ \ \  __<\ \ \_\ \/_/\ \/\ \  __\\ \___  \  
  \ \_\   \ \_\ \_\ \_____\ \____-\ \_____\ \_____\ \ \_\    \ \_\ \_\ \ \_\   \ \_\ \ \_\ \_\ \_\ \_____\ \_____\ \ \_\ \ \_____\/\_____\ 
   \/_/    \/_/ /_/\/_____/\/____/ \/_____/\/_____/  \/_/     \/_/\/_/  \/_/    \/_/  \/_/ /_/\/_/\/_____/\/_____/  \/_/  \/_____/\/_____/ 
-                                                                                                                                                                                                                                                                                                                                                                     
 '''
 
 
