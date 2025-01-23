@@ -35,7 +35,15 @@ def getSerializer(attr_name: str):
 
 # products/v1/{id}
 class ProductView(APIView):
-    # CRUD operation for PRODUCTS only
+
+
+
+    def get_permissions(self):
+        if self.request.method != 'GET':
+            # Only allow admins to create
+            return [IsAdminUser()]
+        return [AllowAny()]    # CRUD operation for PRODUCTS only
+
     def post(self, request):
         # TODO: Handle id passed with requestBody
         try:
