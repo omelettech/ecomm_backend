@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from orders.models import OrderItem, Order, CartItem, Cart
+from products.serializers import ProductSkuSerializer  # Import the related serializer
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -38,7 +39,7 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product_sku_price= serializers.SerializerMethodField(read_only=True)
+    product_sku = serializers.SerializerMethodField()
 
 
     class Meta:
@@ -46,8 +47,9 @@ class CartItemSerializer(serializers.ModelSerializer):
         fields= "__all__"
         read_only_fields = ['cart','product_sku']
 
-    def get_product_sku_price(self,obj):
-        return obj.product_sku.price
+    def get_product_sku(self,obj):
+        related_skus = obj.product_sku # Adjust the related name if needed
+        return ProductSkuSerializer(related_skus, many=False).data
 
 
 class CartSerializer(serializers.ModelSerializer):
