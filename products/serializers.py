@@ -5,11 +5,12 @@ from products.models import Product, ProductSku, SizeAttribute, ColorAttribute
 
 class ProductSkuSerializer(serializers.ModelSerializer):
     size_attribute_value = serializers.SerializerMethodField()
+    associated_image_path = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductSku
         fields = ["id",
-            "product",
+                  "product",
                   "sku",
                   "price",
                   "quantity",
@@ -17,10 +18,16 @@ class ProductSkuSerializer(serializers.ModelSerializer):
                   "edited_at",
                   "color_attribute",
                   "size_attribute_value",
-                  "size_attribute", ]
+                  "size_attribute",
+                  "picture_attribute",
+                  "associated_image_path"
+                  ]
+
     def get_size_attribute_value(self, obj):
         return obj.size_attribute.value if obj.size_attribute else None
 
+    def get_associated_image_path(self, obj):
+        return str(obj.picture_attribute.value.image) if obj.picture_attribute else None
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:

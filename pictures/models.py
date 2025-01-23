@@ -11,8 +11,12 @@ class Image(models.Model):
     alt = models.TextField(max_length=255, null=True, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+
     def __str__(self):
-        return f"Image {self.id}"+ " | " + self.image.name
+        file_path: str = self.image.name
+        path_array = file_path.split("/")
+
+        return path_array[len(path_array) - 1] + f" {self.image.width} * {self.image.height}"
 
 
 class GalleryItem(models.Model):

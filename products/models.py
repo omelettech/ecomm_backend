@@ -70,7 +70,6 @@ class ProductSku(models.Model):
         return f"{self.product} | {self.sku}"
 
 
-
 class Review(models.Model):
     # id
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
