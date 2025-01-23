@@ -4,9 +4,29 @@ from pictures.models import Image
 from products.models import Product, ProductSku, SizeAttribute, ColorAttribute
 
 
+class ProductImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Image
+        fields = ['image', 'alt']
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    images = ProductImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Product
+        fields = "__all__"
+
+class ProductForCartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Product
+        fields=["name",'description','summary']
+
+
 class ProductSkuSerializer(serializers.ModelSerializer):
     size_attribute_value = serializers.SerializerMethodField()
     associated_image = serializers.SerializerMethodField()
+    product = ProductForCartSerializer(many=False, read_only=True )
 
     class Meta:
         model = ProductSku
@@ -32,21 +52,6 @@ class ProductSkuSerializer(serializers.ModelSerializer):
             # Serialize the `picture_attribute.value` using `ProductImageSerializer`
             return ProductImageSerializer(obj.picture_attribute.value).data
         return None
-
-
-class ProductImageSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model=Image
-        fields=['image','alt']
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    images = ProductImageSerializer(many=True, read_only=True)
-    class Meta:
-        model = Product
-        fields = "__all__"
-
 
 
 # noinspection PyPep8
