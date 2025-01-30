@@ -21,7 +21,7 @@ class ProductForCartSerializer(serializers.ModelSerializer):
     class Meta:
         model=Product
         fields=["name",'description','summary']
-
+# TODO reduce the payload for product serializers
 
 class ProductSkuSerializer(serializers.ModelSerializer):
     size_attribute_value = serializers.SerializerMethodField()
