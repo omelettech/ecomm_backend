@@ -36,13 +36,11 @@ def getSerializer(attr_name: str):
 # products/v1/{id}
 class ProductView(APIView):
 
-
-
     def get_permissions(self):
         if self.request.method != 'GET':
             # Only allow admins to create
             return [IsAdminUser()]
-        return [AllowAny()]    # CRUD operation for PRODUCTS only
+        return [AllowAny()]  # CRUD operation for PRODUCTS only
 
     def post(self, request):
         # TODO: Handle id passed with requestBody
@@ -101,17 +99,23 @@ def get_featured_products(request):
         serializer = []
 
         for product in products:
-            default_sku= ProductSku.objects.filter(product=product).first() # get the default sku
 
-            serializer_data = ProductSerializer(product, many=False).data # parse the serializer data for the product
-            serializer_data["default_sku"] = ProductSkuSerializer(default_sku).data if default_sku else None
+            # get the default sku
+            default_sku = ProductSku.objects.filter(product=product).first()
+
+            # parse the serializer data for the product
+            serializer_data = ProductSerializer(product, many=False).data
+
             # add the default sku to the serializer data
+            serializer_data["default_sku"] = ProductSkuSerializer(default_sku).data if default_sku else None
 
-            serializer.append(serializer_data) # append the data to the serializer
+            # append the data to the serializer
+            serializer.append(serializer_data)
 
         return JsonResponse(serializer, safe=False)
     else:
         return JsonResponse({"Error": f"{request.method} not allowed"}, status=405)
+
 
 def get_products_with_default_variations(request):
     # If request is GET automatically comes here.
@@ -148,6 +152,7 @@ class ProductSkuListCreateAPIView(generics.ListCreateAPIView):
             # Only allow admins to create
             return [IsAdminUser()]
         return [AllowAny()]
+
     '''Basic Create for POST method with proper json data
     Basic List for GET method
     '''
@@ -165,6 +170,7 @@ class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):  # 
             return [IsAdminUser()]
         return [AllowAny()]
     # TODO: Add a get method with product_id as param that returns the top sold product_sku variation to display the image and the price
+
 
 class ProductSkusByProductId(APIView):
 

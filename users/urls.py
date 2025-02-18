@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 
 # https://dj-rest-auth.readthedocs.io/en/latest/api_endpoints.html
-from users.views import GoogleLogin, CustomerView, WishlistView, WishlistItemView
+from users.views import GoogleLogin, CustomerView, WishlistView, WishlistItemView, WishlistDeleteView
 
 urlpatterns = [
     path("v1/dj-rest-auth/", include("dj_rest_auth.urls")),
@@ -14,6 +14,5 @@ urlpatterns = [
 
     path('v1/wishlist/', WishlistView.as_view(), name='wishlist_rud'),
     path('v1/wishlistitem/', WishlistItemView.as_view(), name='wishlist_item'),
-    path('v1/wishlistitem/<int:pk>/', WishlistItemView.as_view(), name='wishlist_item_rud'),
-
+    path('v1/wishlistitem/<str:product_sku>',WishlistDeleteView.as_view(),name="delete_wishlist_item")
 ]

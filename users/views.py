@@ -5,11 +5,13 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from django.http import JsonResponse
-from rest_framework import generics
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from ecomm_backend import settings
+from products.models import ProductSku
 from users.models import Customer, Wishlist, WishlistItem
 from users.serializers import CustomerSerializer, WishlistSerializer, WishlistItemSerializer
 
@@ -19,13 +21,15 @@ class GoogleLogin(SocialLoginView):  # if you want to use Authorization Code Gra
     callback_url = settings.GOOGLE_OAUTH_CALLBACK_URL
     client_class = OAuth2Client
 
+
 class GoogleLoginCallback(APIView):  # if you want to use Implicit Grant, use this
     def get(self, request):
-        code=request.GET.get('code')
+        code = request.GET.get('code')
 
         if not code or code is None:
             return JsonResponse(status=400, data={'message': 'Invalid code.'})
         tokenendpoint = urljoin(settings.GOOGLE_OAUTH_TOKEN_URL, 'token')
+
 
 class CustomerView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Customer.objects.all()
@@ -45,7 +49,6 @@ class CustomerView(generics.RetrieveUpdateDestroyAPIView):
         # Ensure we don't overwrite the user field, it is already linked to the user.
         serializer.save(user=self.request.user)
 
-
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.soft_delete()
@@ -62,7 +65,7 @@ class WishlistView(generics.RetrieveAPIView):
         return Wishlist.objects.filter(customer=self.request.user.customer)
 
 
-class WishlistItemView(generics.ListCreateAPIView, generics.RetrieveDestroyAPIView):
+class WishlistItemView(generics.ListCreateAPIView):
     queryset = WishlistItem.objects.all()
     serializer_class = WishlistItemSerializer
     permission_classes = [IsAuthenticated]  # Ensure only authenticated users can access
@@ -94,7 +97,30 @@ class WishlistItemView(generics.ListCreateAPIView, generics.RetrieveDestroyAPIVi
         else:
             # get all wishlist items for the user
             return self.list(request, *args, **kwargs)
+
     def post(self, request, *args, **kwargs):
         request.data['wishlist'] = request.user.customer.wishlist.id
+        request.data['product_sku'] = ProductSku.objects.get(sku=request.data['product_sku']).id
         return self.create(request, *args, **kwargs)
 
+
+class WishlistDeleteView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        product_sku = self.kwargs['product_sku']
+        try:
+            wishlist_item = WishlistItem.objects.get(wishlist=request.user.customer.wishlist.id,
+                                                     product_sku=ProductSku.objects.get(sku=product_sku).id,
+                                                     deleted_at__isnull=True)
+            if wishlist_item:
+                wishlist_item.soft_delete()
+                return JsonResponse(status=status.HTTP_202_ACCEPTED,
+                                    data={'message': f"{product_sku} deleted from wishlist"})
+
+        except ProductSku.DoesNotExist:
+            return JsonResponse(status=status.HTTP_400_BAD_REQUEST,
+                                data={'message': f"{product_sku} sku code doesnt exist"})
+        except WishlistItem.DoesNotExist:
+            return JsonResponse(status=status.HTTP_400_BAD_REQUEST,
+                                data={'message': f"{product_sku} Is deleted or doesnt exist"})

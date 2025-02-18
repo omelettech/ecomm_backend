@@ -13,6 +13,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+load_dotenv(".env")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,14 +23,24 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g&qj3d7phg@rqg!$6%r#d1aa-z6+q-97qjhkrjxvqx9ct7p%xn'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "http://127.0.0.1:8000",
+    # "127.0.0.1",
+    # "http://127.0.0.1:8000",
+    "omelettedrawz.com",
+    "www.omelettedrawz.com"
+
+]
+
+DOMAIN_URL = "127.0.0.1:8000/"
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Your React app's origin
+    'http://127.0.0.1:8000',
 ]
 
 # Application definition
@@ -164,17 +175,12 @@ STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-DOMAIN_URL = "127.0.0.1:8000/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Your React app's origin
-    'http://127.0.0.1:8000',
-]
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -205,6 +211,11 @@ REST_AUTH = {
     # "JWT_AUTH_HTTPONLY": False,  # Makes sure refresh token is sent
 }
 # Google OAuth2
-load_dotenv(".env")
 
 GOOGLE_OAUTH_CALLBACK_URL = os.getenv("GOOGLE_OAUTH_CALLBACK_URL")
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
