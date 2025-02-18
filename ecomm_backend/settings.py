@@ -13,11 +13,11 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+
 load_dotenv(".env")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -32,15 +32,20 @@ ALLOWED_HOSTS = [
     # "127.0.0.1",
     # "http://127.0.0.1:8000",
     "omelettedrawz.com",
-    "www.omelettedrawz.com"
+    "www.omelettedrawz.com",
+    "ecomm-backend-lcpf.onrender.com"
 
 ]
 
-DOMAIN_URL = "127.0.0.1:8000/"
+DOMAIN_URL = "ecomm-backend-lcpf.onrender.com"
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Your React app's origin
-    'http://127.0.0.1:8000',
+    # "http://localhost:3000",
+    "https://www.omelettedrawz.com",
+    "www.omelettedrawz.com",
+    "ecomm-backend-lcpf.onrender.com"
+
+    # 'http://127.0.0.1:8000',
 ]
 
 # Application definition
@@ -84,7 +89,6 @@ INSTALLED_APPS = [
     "django_extensions",
 
 ]
-
 
 # allauth settings
 SITE_ID = 1
@@ -175,12 +179,10 @@ STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
