@@ -29,9 +29,10 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    # "127.0.0.1",
+    "127.0.0.1",
     # "http://127.0.0.1:8000",
-    "44.202.17.124"
+    'localhost',
+    "44.202.17.124",
     "omelettedrawz.com",
     "https://www.omelettedrawz.com",
     # "ecomm-backend-lcpf.onrender.com"
