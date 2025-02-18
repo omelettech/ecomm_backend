@@ -26,25 +26,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     # "127.0.0.1",
     # "http://127.0.0.1:8000",
     "44.202.17.124"
     "omelettedrawz.com",
-    "www.omelettedrawz.com",
+    "https://www.omelettedrawz.com",
     # "ecomm-backend-lcpf.onrender.com"
 
 ]
 
-DOMAIN_URL = "ecomm-backend-lcpf.onrender.com"
+DOMAIN_URL = "44.202.17.124"
 
 CORS_ALLOWED_ORIGINS = [
     # "http://localhost:3000",
     "https://www.omelettedrawz.com",
-    "www.omelettedrawz.com",
-    "ecomm-backend-lcpf.onrender.com"
+    "https://44.202.17.124.com",
+    "https://www.44.202.17.124.com"
 
     # 'http://127.0.0.1:8000',
 ]
