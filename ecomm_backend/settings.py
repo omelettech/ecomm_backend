@@ -31,9 +31,10 @@ DEBUG = True
 ALLOWED_HOSTS = [
     # "127.0.0.1",
     # "http://127.0.0.1:8000",
+    "44.202.17.124"
     "omelettedrawz.com",
     "www.omelettedrawz.com",
-    "ecomm-backend-lcpf.onrender.com"
+    # "ecomm-backend-lcpf.onrender.com"
 
 ]
 
