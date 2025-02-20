@@ -32,7 +32,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     # "http://127.0.0.1:8000",
     'localhost',
-    "44.202.17.124",
+    "18.211.161.120",
     "omelettedrawz.com",
     "https://www.omelettedrawz.com",
     # "ecomm-backend-lcpf.onrender.com"
