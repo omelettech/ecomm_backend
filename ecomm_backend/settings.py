@@ -44,8 +44,8 @@ DOMAIN_URL = "44.202.17.124"
 CORS_ALLOWED_ORIGINS = [
     # "http://localhost:3000",
     "https://www.omelettedrawz.com",
-    "https://44.202.17.124.com",
-    "https://www.44.202.17.124.com"
+    "https://18.211.161.120:8000",
+    "https://www.18.211.161.120:8000"
 
     # 'http://127.0.0.1:8000',
 ]
