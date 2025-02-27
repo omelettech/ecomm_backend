@@ -21,5 +21,5 @@ class GalleryItemSerializer(serializers.ModelSerializer):
     Returns the link of the image only'''
     def get_src(self,obj):
         if obj.image:
-            return "http://"+DOMAIN_URL+MEDIA_URL+obj.image.name
+            return "http://"+DOMAIN_URL+MEDIA_URL+"/"+obj.image.name
         return None

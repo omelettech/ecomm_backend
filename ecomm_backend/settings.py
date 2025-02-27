@@ -26,30 +26,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    # "http://127.0.0.1:8000",
-    'localhost',
-    "18.211.161.120",
-    "omelettedrawz.com",
-    "https://www.omelettedrawz.com",
-    # "ecomm-backend-lcpf.onrender.com"
-
-]
-
-DOMAIN_URL = "44.202.17.124"
+# ALLOWED_HOSTS = [
+#     "127.0.0.1",
+#     "http://127.0.0.1:8000",
+#     'localhost',
+#     "18.211.161.120",
+#     "omelettedrawz.com",
+#     "https://www.omelettedrawz.com",
+#     # "ecomm-backend-lcpf.onrender.com"
+#
+# ]
+ALLOWED_HOSTS = []
+DOMAIN_URL = "127.0.0.1:8000/"
 
 CORS_ALLOWED_ORIGINS = [
-    # "http://localhost:3000",
+    "http://localhost:3000",  # React frontend
+
+    "http://127.0.0.1:3000",
     "https://www.omelettedrawz.com",
     "https://18.211.161.120:8000",
-    "https://www.18.211.161.120:8000"
-
-    # 'http://127.0.0.1:8000',
+    "https://www.18.211.161.120:8000",
+    'http://127.0.0.1:8000',
 ]
-
+CORS_ALLOW_ALL_ORIGINS = os.getenv("DJANGO_ENG") != "production"
 # Application definition
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -141,13 +142,17 @@ username = os.getenv('POSTGRES_USERNAME')
 password = os.getenv('POSTGRES_PASSWORD')
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    #     'NAME': 'ecommdb',
+    #     'USER': username,
+    #     'PASSWORD': password,
+    #     'HOST': 'localhost',
+    #     'PORT': '5432'
+    # },
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ecommdb',
-        'USER': username,
-        'PASSWORD': password,
-        'HOST': 'localhost',
-        'PORT': ''
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -226,8 +231,14 @@ REST_AUTH = {
 
 GOOGLE_OAUTH_CALLBACK_URL = os.getenv("GOOGLE_OAUTH_CALLBACK_URL")
 
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+
+if os.getenv("DJANGO_ENV") == "production":
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+else:
+
+    SECURE_SSL_REDIRECT = False
