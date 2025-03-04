@@ -1,4 +1,5 @@
-from django.db.models.signals import post_save
+from allauth.socialaccount.signals import social_account_added, social_account_updated
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 

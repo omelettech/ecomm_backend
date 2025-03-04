@@ -1,5 +1,6 @@
 from urllib.parse import urljoin
 
+import requests
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
@@ -7,28 +8,54 @@ from dj_rest_auth.registration.views import SocialLoginView
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 
 from ecomm_backend import settings
 from products.models import ProductSku
 from users.models import Customer, Wishlist, WishlistItem
 from users.serializers import CustomerSerializer, WishlistSerializer, WishlistItemSerializer
+from .models import User
+#
+# class GoogleLogin(SocialLoginView):
+#     adapter_class = GoogleOAuth2Adapter
+#     callback_url = settings.GOOGLE_OAUTH_CALLBACK_URL
+#     client_class = OAuth2Client
 
 
-class GoogleLogin(SocialLoginView):  # if you want to use Authorization Code Grant, use this
-    adapter_class = GoogleOAuth2Adapter
-    callback_url = settings.GOOGLE_OAUTH_CALLBACK_URL
-    client_class = OAuth2Client
+class GoogleSSOLoginView(APIView):
+    permission_classes = [AllowAny]
 
+    def post(self, request):
+        token = request.data.get("token") or request.headers.get("Authorization").split(" ")[1]
 
-class GoogleLoginCallback(APIView):  # if you want to use Implicit Grant, use this
-    def get(self, request):
-        code = request.GET.get('code')
+        if not token:
+            return JsonResponse({"error": "Token is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not code or code is None:
-            return JsonResponse(status=400, data={'message': 'Invalid code.'})
-        tokenendpoint = urljoin(settings.GOOGLE_OAUTH_TOKEN_URL, 'token')
+        # Verify Google ID Token
+        google_verify_url = f"https://oauth2.googleapis.com/tokeninfo?id_token={token}"
+        response = requests.get(google_verify_url)
+        if response.status_code != 200:
+            return JsonResponse({"error": "Invalid ID Token"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_info = response.json()
+        email = user_info.get("email")
+        username = user_info.get("email").split("@")[0]
+        first_name = user_info.get("given_name", "")
+        last_name = user_info.get("family_name", "")
+        profile_picture = user_info.get("picture", "")
+
+        # Create or retrieve user
+        user, _ = User.objects.get_or_create(email=email,
+                                             username=username,
+                                             defaults={"first_name": first_name, "last_name": last_name})
+        user.profile_picture = profile_picture
+        user.save()
+
+        # Generate auth token
+        token, _ = Token.objects.get_or_create(user=user)
+        return JsonResponse({"token": token.key, "user": {"email": user.email, "profile_picture": user.profile_picture}})
 
 
 class CustomerView(generics.RetrieveUpdateDestroyAPIView):
