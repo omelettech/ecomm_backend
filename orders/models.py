@@ -1,9 +1,18 @@
+import random
+import string
+import uuid
+
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 
 from products.models import ProductSku
 from users.models import Customer
+
+
+def generate_order_number():
+    unique_suffix = ''.join(random.choices(string.digits, k=8))
+    return f"ORD#{unique_suffix}"
 
 
 class ShippingAddress(models.Model):
@@ -44,7 +53,7 @@ class Order(models.Model):
         ("Complete", "Complete"),
     ]
     # id
-    order_number = models.CharField(max_length=30, unique=True,editable=False)
+    order_number = models.UUIDField(default=uuid.uuid4, editable=False)
     status = models.CharField(max_length=50, choices=ORDER_STATUS, default="Placed")
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
 

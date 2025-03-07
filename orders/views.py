@@ -4,8 +4,9 @@ import string
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.utils import timezone
-from rest_framework import generics, status
+from rest_framework import generics, status, permissions
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 
 from orders.models import Order, OrderItem, Cart, CartItem
 from orders.serializers import OrderSerializer, OrderItemSerializer, CartSerializer, CartItemSerializer
@@ -13,84 +14,119 @@ from payments.models import Payment
 from products.models import ProductSku
 
 
-def perform_create_order_items(order_instance, cart_items_data):
-    for cart_item in cart_items_data:
-        print(cart_item['id'])
-        product_sku_instance = ProductSku.objects.get(sku=cart_item['product_sku'])
-        quantity = cart_item['quantity']
-        print(product_sku_instance)
+def _perform_create_order_items(order_instance, order_items_buffer):
+    for order_item in order_items_buffer:
+        print("rder_item:", order_item)
+        product_sku_instance = ProductSku.objects.get(sku=order_item.product_sku.sku)
+        quantity = order_item.quantity
+        print("prdocutSku instance", product_sku_instance)
 
-        if product_sku_instance is None:
-            raise ValueError("Product SKU not found")
         if quantity <= 0:
             raise ValueError("Quantity should be greater than 0")
-        elif quantity > product_sku_instance.quantity:
-            raise ValueError("Quantity should be less than or equal to available quantity")
 
         OrderItem.objects.create(order=order_instance, product_sku=product_sku_instance, quantity=quantity)
-        update_product_sku_quantity(product_sku_instance, quantity)
+        _update_product_sku_quantity(product_sku_instance, quantity)
 
 
-def update_product_sku_quantity(product_sku_instance, quantity_of_orderitem):
+def _update_product_sku_quantity(product_sku_instance, quantity_of_orderitem):
     product_sku_instance.quantity -= quantity_of_orderitem
     product_sku_instance.save()
 
 
-class OrderListApiView(generics.ListAPIView):
+def _empty_cart(cart):
+    cart.cartitem_set.all().update(deleted_at=timezone.now())
+    cart.save()
+
+
+class OrderCreateListApiView(generics.ListCreateAPIView):
     # LIST
     serializer_class = OrderSerializer
-    permission_classes = [IsAdminUser]
+
+    def get_permissions(self):
+        if self.request.method in permissions.SAFE_METHODS:
+            return [permissions.IsAuthenticated()]
+        return [permissions.IsAdminUser()]
 
     def get_queryset(self):
         return Order.objects.filter(customer=self.request.user.customer)
 
 
-def generate_order_number():
-    unique_suffix = ''.join(random.choices(string.digits, k=8))
-    return f"ORD#{unique_suffix}"
-
-
-class OrderCreateApiView(generics.CreateAPIView):
-    # CREATE AND LIST
+class CreateOrderWithCart(generics.CreateAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        cart_items_data = self.request.user.customer.cart.cartitem_set.all()
-        ordernum = generate_order_number()
-
+        cart_instance = self.request.user.customer.cart
+        cart_items_data = cart_instance.cartitem_set.filter(deleted_at__isnull=True).all()
         total_price = 0
-        order_buffer = Order.objects.create(order_number=ordernum, customer=self.request.user.customer)
         order_item_buffer = []
+        order_buffer = Order(customer=self.request.user.customer)
 
         for cart_item in cart_items_data:
+            print(cart_item)
             # make a new cart item object
-            product_sku = cart_item.product_sku
-            # TODO: Create functions that checks if product sku exists and if quantity is good,
-            #  use it for both order and cart
+            product_sku_instance = cart_item.product_sku
+            if product_sku_instance is None:
+                raise ValueError("Product SKU not found")
+
+            if product_sku_instance.quantity <= 0:
+                return JsonResponse({"error": f"Product variation has no items left"},
+                                    status=HTTP_400_BAD_REQUEST)
+            if cart_item.quantity > product_sku_instance.quantity:
+                return JsonResponse({"error": f"Product variation only has {product_sku_instance.quantity} items left"},
+                                    status=HTTP_400_BAD_REQUEST)
+
             order_item_buffer.append(
-                OrderItem.objects.create(
+                OrderItem(
                     order=order_buffer,
-                    product_sku=product_sku,
+                    product_sku=product_sku_instance,
                     quantity=cart_item.quantity
                 )
             )
-
             total_price += cart_item.product_sku.price * cart_item.quantity
+
         print(total_price)
+        order_buffer.save()  # since cart_item didnt fail we can be almost certain that order will be created
+        try:
+            _perform_create_order_items(order_buffer, order_item_buffer)
+        except ValueError as e:
+            return JsonResponse({"error": str(e)}, status=HTTP_400_BAD_REQUEST)
+        _empty_cart(cart_instance)
+        return JsonResponse({"Order created": f"{order_item_buffer[0].order}"},
+                            status=HTTP_201_CREATED)
 
-        return JsonResponse({"Order created": f"{order_item_buffer[0].order}"})
 
-    # def generate_ordernum(self, serializer):
-    #     ordernum = generate_order_number()
-    #
-    #     # Create A orderitem instance if doesnt exist
-    #     # order_items_data = self.request.data.get("order_items", {})
-    #     cart_items_data = self.request.user.customer.cart.cartitem_set.all()
-    #     print(cart_items_data)
-    #
-    #     order_instance = serializer.save(customer=self.request.user.customer, order_number=ordernum)
-    #     perform_create_order_items(order_instance, cart_items_data)
+#
+#
+# class OrderCreateApiView(generics.CreateAPIView):
+#     # CREATE AND LIST
+#     serializer_class = OrderSerializer
+#     permission_classes = [IsAuthenticated]
+#
+#     def post(self, request, *args, **kwargs):
+#         total_price = 0
+#         order_item_buffer = [order_item for order_item in request.data.get("order_items", [])]
+#         order_buffer = Order(customer=self.request.user.customer)
+#         print(order_item_buffer)
+#         # for order_item in order_item_buffer:
+#         #
+#         #
+#         #
+#         # # total_price += cart_item.product_sku.price * cart_item.quantity
+#         # print(total_price)
+#
+#         return JsonResponse({"Order created": f"{order_item_buffer[0].order}"})
+#
+#     # def generate_ordernum(self, serializer):
+#     #     ordernum = generate_order_number()
+#     #
+#     #     # Create A orderitem instance if doesnt exist
+#     #     # order_items_data = self.request.data.get("order_items", {})
+#     #     cart_items_data = self.request.user.customer.cart.cartitem_set.all()
+#     #     print(cart_items_data)
+#     #
+#     #     order_instance = serializer.save(customer=self.request.user.customer, order_number=ordernum)
+#     #     perform_create_order_items(order_instance, cart_items_data)
 
 
 class OrderRetrieveUpdateDeleteApiView(generics.RetrieveUpdateDestroyAPIView):
@@ -155,7 +191,7 @@ class CartListCreateApiView(generics.ListCreateAPIView):
 
         try:
             product_sku = ProductSku.objects.get(sku=self.request.data.get('product_sku'))
-            quantity = self.request.data.get("quantity")
+            quantity = int(self.request.data.get("quantity"))
 
             if not quantity:
                 return JsonResponse({"error": f"Quantity not provided"})
@@ -169,13 +205,18 @@ class CartListCreateApiView(generics.ListCreateAPIView):
         cart_item, created = CartItem.objects.get_or_create(
             cart=self.get_queryset()[0],
             product_sku=product_sku,
-            defaults={'quantity': int(quantity)},  # providing quantity only for creation
+            defaults={'quantity': quantity},  # providing quantity only for creation
             deleted_at__isnull=True  # Ensures only non-deleted rows are considered
         )
 
+        # checking if cart item quantity + quantity is less than product_sku quantity
         if not created:
-            cart_item.quantity += int(quantity)
-            cart_item.save()
+            if cart_item.quantity + quantity < product_sku.quantity:
+                cart_item.quantity += quantity
+                cart_item.save()
+            else:
+                return JsonResponse({"error": f"Product variation only has {product_sku.quantity} items left"})
+
 
         serializer = self.serializer_class(Cart.objects.get(customer=self.request.user.customer))
         return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
@@ -191,9 +232,7 @@ class CartItemRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView
     def get_object(self):
         cart = self.get_cart()[0]
         id = self.kwargs.get('pk')
-        return CartItem.objects.get(cart=cart, id=id,deleted_at__isnull=True)
-
-
+        return CartItem.objects.get(cart=cart, id=id, deleted_at__isnull=True)
 
     def get_queryset(self):
         return CartItem.objects.filter(cart=self.get_cart)
@@ -218,11 +257,10 @@ class CartItemRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView
 
         return JsonResponse(serializer.data, status=status.HTTP_204_NO_CONTENT, safe=False)
 
-
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False) # Becomes true when a PATCH request sent
+        partial = kwargs.pop('partial', False)  # Becomes true when a PATCH request sent
 
-        cart=self.get_cart()
+        cart = self.get_cart()
         instance = self.get_object()
         data = request.data
         serializer = self.get_serializer(instance, data=data, partial=partial)
@@ -230,7 +268,4 @@ class CartItemRetrieveUpdateDestroyApiView(generics.RetrieveUpdateDestroyAPIView
 
         self.perform_update(serializer)
 
-        return JsonResponse(serializer.data,status=status.HTTP_202_ACCEPTED)
-
-
-
+        return JsonResponse(serializer.data, status=status.HTTP_202_ACCEPTED)
