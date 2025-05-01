@@ -13,11 +13,13 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
-load_dotenv(".env")
+load_dotenv(dotenv_path="./.env")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -135,18 +137,18 @@ username = os.getenv('POSTGRES_USERNAME')
 password = os.getenv('POSTGRES_PASSWORD')
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    #     'NAME': 'ecommdb',
-    #     'USER': username,
-    #     'PASSWORD': password,
-    #     'HOST': 'localhost',
-    #     'PORT': '5432'
-    # },
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': "postgres.voogwriniugbzzpmkyrz",
+        'PASSWORD': "PutkiMara123!",
+        'HOST': 'aws-0-us-east-2.pooler.supabase.com',
+        'PORT': '5432'
+    },
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
 }
 
 # Password validation
