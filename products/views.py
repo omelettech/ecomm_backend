@@ -5,6 +5,8 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import JSONParser
 from django.views import View
 from rest_framework.permissions import IsAdminUser, AllowAny
@@ -33,8 +35,14 @@ def getSerializer(attr_name: str):
     return None
 
 
+class ProductPagination(PageNumberPagination):
+    page_size = 5  # Show 5 employees per page
+
+
 # products/v1/{id}
 class ProductView(APIView):
+    serializer_class = ProductSerializer
+    pagination_class = ProductPagination
 
     def get_permissions(self):
         if self.request.method != 'GET':
@@ -99,7 +107,6 @@ def get_featured_products(request):
         serializer = []
 
         for product in products:
-
             # get the default sku
             default_sku = ProductSku.objects.filter(product=product).first()
 
@@ -116,27 +123,25 @@ def get_featured_products(request):
     else:
         return JsonResponse({"Error": f"{request.method} not allowed"}, status=405)
 
-
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def get_products_with_default_variations(request):
-    # If request is GET automatically comes here.
-    if request.method == 'GET':
-        products = Product.objects.all()
-        serializer = []
+    paginator = PageNumberPagination()  # Instantiate paginator
+    paginator.page_size = request.GET.get("page_size", 1)  # Default page size = 10
 
-        for product in products:
-            default_sku = ProductSku.objects.filter(product=product).first()
+    products = Product.objects.all()  # Get all products
+    paginated_products = paginator.paginate_queryset(products, request)  # Apply pagination
 
-            print("default:", default_sku, type(default_sku))
+    serialized_products = []
+    for product in paginated_products:
+        default_sku = ProductSku.objects.filter(product=product).first()
 
-            serializer_data = ProductSerializer(product, many=False).data
-            serializer_data["default_sku"] = ProductSkuSerializer(default_sku).data if default_sku else None
+        serializer_data = ProductSerializer(product, many=False).data
+        serializer_data["default_sku"] = ProductSkuSerializer(default_sku).data if default_sku else None
 
-            serializer.append(serializer_data)
+        serialized_products.append(serializer_data)
 
-        return JsonResponse(serializer, safe=False)
-    else:
-        return JsonResponse({"Error": f"{request.method} not allowed"}, status=405)
-
+    return paginator.get_paginated_response(serialized_products)  # Return paginated response
 
 '''
 CRUD+ operations for ProductSku model 
@@ -224,6 +229,6 @@ class ProductAttributeListCreateAPIView(APIView):
                     return JsonResponse(serializer.data, safe=False)
 
             except LookupError:
-                return JsonResponse({f'Error': 'Mattributes not found, check model name'}, status=400)
+                return JsonResponse({f'Error': 'attributes not found, check model name'}, status=400)
 
         return JsonResponse({f'Error': 'No serializer class, add it the dictionary'}, status=400)
