@@ -198,6 +198,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -225,14 +227,13 @@ REST_AUTH = {
 # Google OAuth2
 
 GOOGLE_OAUTH_CALLBACK_URL = os.getenv("GOOGLE_OAUTH_CALLBACK_URL")
-GOOGLE_OAUTH_CLIENT_ID=os.getenv("GOOGLE_OAUTH_CLIENT_ID")
+GOOGLE_OAUTH_CLIENT_ID = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
 SOCIALACCOUNT_PROVIDERS = {
-     "google": {
+    "google": {
         "SCOPE": ["email", "profile"],
         "AUTH_PARAMS": {"access_type": "online"},
     }
 }
-
 
 if os.getenv("DJANGO_ENV") == "production":
     SECURE_BROWSER_XSS_FILTER = True
