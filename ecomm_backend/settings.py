@@ -38,19 +38,12 @@ DEBUG = True
 #     # "ecomm-backend-lcpf.onrender.com"
 #
 # ]
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOST_LIST", "127.0.0.1").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "https://127.0.0.1").split(",")
 DOMAIN_URL = "127.0.0.1:8000/"
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React frontend
-
-    "http://127.0.0.1:3000",
-    "https://www.omelettedrawz.com",
-    "https://18.211.161.120:8000",
-    "https://www.18.211.161.120:8000",
-    'http://127.0.0.1:8000',
-]
-CORS_ALLOW_ALL_ORIGINS = os.getenv("DJANGO_ENG") != "production"
+CORS_ALLOWED_ORIGINS = os.getenv("DJANGO_CORS_ALLOWED_ORIGINS").split(",")
+CORS_ALLOW_ALL_ORIGINS = os.getenv("DJANGO_ENV") != "production"
 # Application definition
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
