@@ -133,9 +133,6 @@ WSGI_APPLICATION = 'ecomm_backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 
-username = os.getenv('POSTGRES_USERNAME')
-password = os.getenv('POSTGRES_PASSWORD')
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
