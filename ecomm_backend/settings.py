@@ -137,10 +137,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
-        'USER': "postgres.voogwriniugbzzpmkyrz",
-        'PASSWORD': "PutkiMara123!",
-        'HOST': 'aws-0-us-east-2.pooler.supabase.com',
-        'PORT': '5432'
+        'USER': os.getenv("SUPABASE_USER"),
+        'PASSWORD': os.getenv("SUPABASE_PASSWORD"),
+        'HOST': os.getenv("SUPABASE_HOST"),
+        'PORT': os.getenv("SUPABASE_PORT"),
     },
     # 'default': {
     #     'ENGINE': 'django.db.backends.sqlite3',
