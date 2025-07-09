@@ -44,7 +44,6 @@ class ProductAttribute(models.Model):
 class SizeAttribute(ProductAttribute):
     value = models.CharField(blank=False, max_length=256)
 
-
 class ColorAttribute(ProductAttribute):
     value = models.CharField(blank=False, max_length=256)
 
@@ -53,7 +52,7 @@ class PictureAttribute(ProductAttribute):
 
 # for every new attribute table add an attr id to ProductSkus table
 class ProductSku(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='skus')
     sku = models.CharField(max_length=55, blank=False, null=False, unique=True)
     price = models.FloatField(default=0, blank=False, null=False)
     quantity = models.IntegerField(default=0)
@@ -65,7 +64,6 @@ class ProductSku(models.Model):
     color_attribute = models.ForeignKey(ColorAttribute, on_delete=models.SET_NULL, null=True, default=None, blank=True)
     size_attribute = models.ForeignKey(SizeAttribute, on_delete=models.SET_NULL, null=True, default=None, blank=True)
     picture_attribute=models.ForeignKey(PictureAttribute,on_delete=models.SET_NULL,null=True,default=None,blank=True)
-
     def __str__(self):
         return f"{self.product} | {self.sku}"
 
