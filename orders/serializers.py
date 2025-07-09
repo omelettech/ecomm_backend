@@ -11,7 +11,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields= ["id","order", "product_sku", "quantity", "price"]
 
     def get_price(self, obj):
-        return obj.product_sku.price
+        return obj.product_sku.price * obj.quantity
 
 class OrderSerializer(serializers.ModelSerializer):
     orderitem_set = OrderItemSerializer(many=True,required=False)
@@ -28,7 +28,7 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_total_price(self, obj):
         total = 0
         for item in obj.orderitem_set.all():
-            total += item.product_sku.price * item.quantity
+            total += item.price
         return total
 
 class OrderCreateSerializer(serializers.ModelSerializer):
