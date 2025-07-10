@@ -1,22 +1,17 @@
 from json import JSONDecodeError
 
-from django.core import serializers
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
+from django.apps import apps
+from django.http import JsonResponse
+from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.parsers import JSONParser
-from django.views import View
 from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.utils import json
 from rest_framework.views import APIView
-from django.apps import apps
+
 from products.models import Product, ProductSku
 from products.serializers import ProductSerializer, ProductSkuSerializer, SizeAttributeSerializer, \
     ColorAttributeSerializer
-from rest_framework import generics
 
 ATTRIBUTE_SERIALIZERS = {  # Add new attribute tables here
     'size': SizeAttributeSerializer,
@@ -123,11 +118,12 @@ def get_featured_products(request):
     else:
         return JsonResponse({"Error": f"{request.method} not allowed"}, status=405)
 
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_products_with_default_variations(request):
     paginator = PageNumberPagination()  # Instantiate paginator
-    paginator.page_size = request.GET.get("page_size", 1)  # Default page size = 10
+    paginator.page_size = request.GET.get("page_size", 10)  # Default page size = 10
 
     products = Product.objects.all()  # Get all products
     paginated_products = paginator.paginate_queryset(products, request)  # Apply pagination
@@ -142,6 +138,7 @@ def get_products_with_default_variations(request):
         serialized_products.append(serializer_data)
 
     return paginator.get_paginated_response(serialized_products)  # Return paginated response
+
 
 '''
 CRUD+ operations for ProductSku model 
@@ -171,9 +168,10 @@ class ProductSkuUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):  # 
 
     def get_permissions(self):
         if self.request.method == 'GET':
-            # Only allow admins to create
-            return [IsAdminUser()]
-        return [AllowAny()]
+            # Only allow admins to create1
+            return [AllowAny()]
+
+        return [IsAdminUser()]
     # TODO: Add a get method with product_id as param that returns the top sold product_sku variation to display the image and the price
 
 
