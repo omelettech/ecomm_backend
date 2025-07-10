@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import ViewSet
 
 from dashboard.permissions import IsArtistUser
+from dashboard.serializers import ProductForDashboardSerializer
 from orders.models import Order
 from orders.serializers import OrderSerializer
 from pictures.models import GalleryItem
@@ -28,12 +29,10 @@ class OrderCRUD(viewsets.ModelViewSet):
 
 # TODO: Products listing
 class ProductCRUD(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+    queryset = Product.objects.all().order_by('id')
+    serializer_class = ProductForDashboardSerializer
 
-    # Optional: filter or restrict data
-    def get_queryset(self):
-        return Product.objects.filter(deleted_at__isnull=True)
+
 # TODO: Charts
 
 class GalleryViewSet(viewsets.ModelViewSet):
