@@ -43,10 +43,13 @@ urlpatterns = [
     path('orders/', include('orders.urls')),
     path('payments/', include('payments.urls')),
     path('users/', include('users.urls')),
-    path('images/',include('pictures.urls')),
+    path('pictures/', include('pictures.urls')),
     # swagger
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0),
          name='schema-swagger-ui'),
+    # project/urls.py
+    path('dashboard/', include('dashboard.urls')),
+
 ]
 
 if settings.DEBUG:
