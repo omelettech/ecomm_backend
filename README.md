@@ -16,7 +16,7 @@ Ensure you have the following installed:
 - Python 3.x
 - PostgreSQL
 - pip
-- virtualenv (optional but recommended)
+- pipenv 
 
 ### Setup Instructions
 ```bash
@@ -35,6 +35,7 @@ pip install -r requirements.txt
 cp .env.example .env
 # Update the .env file with correct database credentials
 
+pipenv shell
 # Apply database migrations
 python manage.py migrate
 
@@ -48,15 +49,21 @@ python manage.py runserver
 ## Database Structure
 The application consists of several database tables, each corresponding to different Django models. Below is an overview of key tables:
 - **Users**: Stores user authentication data
-- **Employees**: Contains employee details
-- **Departments**: Manages department information
-- **Projects**: Tracks projects and assignments
-- **Attendance**: Logs employee attendance
+- **Customer**: Contains customer details
+- **Gallery**: Manages gallery items for showcasing images
+- **Products**: Stores products and their variants
+- **ProductSKU**: Stores individual product details
+- **Images**: Stores image paths that is delivered by a CDN
+- **Orders**: Stores orders, their status and a corresponding profile
+- **OrderItem**: Stores individual products as orderitems
+- **Carts**: Stores user carts that they can modify
+- **CartItems**: Stores individual cart item which is almost the same as products (potential multiple carts in the future)
+- **Commissions**: [coming soon] Stores commissions/requests for the Artist by their customers
 
 ## API Documentation
 The API is documented using Swagger, accessible at:
 ```
-http://127.0.0.1:8000/swagger/
+[Your Domain]/swagger/
 ```
 
 ## API Endpoints
@@ -70,8 +77,7 @@ http://127.0.0.1:8000/swagger/
 | PATCH  | `/images/v1/GalleryItem/{id}/`  | Partially updates a gallery item  |
 | DELETE | `/images/v1/GalleryItem/{id}/`  | Deletes a gallery item            |
 
-### Orders
-#### Cart
+### Cart
 | Method | Endpoint                    | Description                  |
 |--------|----------------------------|------------------------------|
 | GET    | `/orders/v1/cart/`         | Retrieves all cart items     |
@@ -81,7 +87,7 @@ http://127.0.0.1:8000/swagger/
 | PATCH  | `/orders/v1/cart/{id}`     | Partially updates a cart item |
 | DELETE | `/orders/v1/cart/{id}`     | Deletes a cart item         |
 
-#### Orders
+### Orders
 | Method | Endpoint                   | Description                  |
 |--------|---------------------------|------------------------------|
 | POST   | `/orders/v1/order`        | Creates a new order         |
